@@ -10,7 +10,12 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.android.volley.VolleyError;
+
+import net.rivergod.sec.seoulrnd.android.menu_seoulrnd.dto.CuisineDTO;
+
 import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -70,11 +75,11 @@ public class MainActivity extends AppCompatActivity {
         Communicator.getMenu(null);
     }
 
-    public void onEvent(Object e) {
+    public void onEvent(List<CuisineDTO> e) {
         Log.d(TAG, "onEvent object e = " + e.getClass().getName() + ", value = " + e.toString());
     }
 
-    public void onEvent(String e) {
-        Log.d(TAG, "onEvent object e = " + e.getClass().getName() + ", value = " + e);
+    public void onEvent(VolleyError error) {
+        Log.d(TAG, "onEvent error = " + error.toString());
     }
 }
