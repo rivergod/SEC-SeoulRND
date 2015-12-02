@@ -76,6 +76,8 @@ public class Communicator {
         eventBus = new EventBus();
 
         requestQueue.start();
+
+        volleyer(requestQueue).settings().setConfiguration(CommunicatorVolleyerConfigurationFactory.create()).setAsDefault().done();
     }
 
 
@@ -152,16 +154,15 @@ public class Communicator {
 
                         Object[] menus = null;
 
-                        //breakfast
+                        List<CuisineDTO> cuisines = new ArrayList<CuisineDTO>();
 
+                        //breakfast
                         menus = new Object[0];
                         try {
                             menus = node.evaluateXPath("//div[@id='layer1']//div[@class='container_CafeA']");
                         } catch (XPatherException e) {
                             e.printStackTrace();
                         }
-
-                        List<CuisineDTO> cuisines = new ArrayList<CuisineDTO>();
 
                         for (Object menu : menus) {
                             if (menu instanceof TagNode) {
@@ -175,6 +176,50 @@ public class Communicator {
                                 cuisines.add(cuisine);
                             }
                         }
+
+                        //lunch
+                        menus = new Object[0];
+                        try {
+                            menus = node.evaluateXPath("//div[@id='layer2']//div[@class='container_CafeA']");
+                        } catch (XPatherException e) {
+                            e.printStackTrace();
+                        }
+
+                        for (Object menu : menus) {
+                            if (menu instanceof TagNode) {
+                                CuisineDTO cuisine = new CuisineDTO();
+                                TagNode cafeATagNode = (TagNode) menu;
+                                cuisine.setMealCode(CuisineDTO.MEALCODE_LAUNCH);
+                                cuisine.setCafeteriaUrl(cafeATagNode.getChildTags()[0].getChildTags()[0].getChildTags()[0].getAttributeByName("src"));
+                                cuisine.setTitle(cafeATagNode.getChildTags()[0].getText().toString());
+                                cuisine.setContent(cafeATagNode.getChildTags()[1].getText().toString());
+
+                                cuisines.add(cuisine);
+                            }
+                        }
+
+                        //dinner
+                        menus = new Object[0];
+                        try {
+                            menus = node.evaluateXPath("//div[@id='layer3']//div[@class='container_CafeA']");
+                        } catch (XPatherException e) {
+                            e.printStackTrace();
+                        }
+
+                        for (Object menu : menus) {
+                            if (menu instanceof TagNode) {
+                                CuisineDTO cuisine = new CuisineDTO();
+                                TagNode cafeATagNode = (TagNode) menu;
+                                cuisine.setMealCode(CuisineDTO.MEALCODE_DINNER);
+                                cuisine.setCafeteriaUrl(cafeATagNode.getChildTags()[0].getChildTags()[0].getChildTags()[0].getAttributeByName("src"));
+                                cuisine.setTitle(cafeATagNode.getChildTags()[0].getText().toString());
+                                cuisine.setContent(cafeATagNode.getChildTags()[1].getText().toString());
+
+                                cuisines.add(cuisine);
+                            }
+                        }
+
+
                         Communicator.getEventBus().post(cuisines);
 
                     }
