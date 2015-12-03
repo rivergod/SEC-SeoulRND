@@ -8,7 +8,7 @@ import com.google.android.gms.analytics.Tracker;
 /**
  * Created by rivergod on 15. 12. 3.
  */
-public class AnalyticsApplication extends Application {
+public class MenuApplication extends Application {
     private Tracker mTracker;
 
     /**

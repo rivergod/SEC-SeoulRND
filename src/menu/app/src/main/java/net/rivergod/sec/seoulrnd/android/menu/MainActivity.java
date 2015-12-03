@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        AnalyticsApplication application = (AnalyticsApplication) getApplication();
+//        MenuApplication application = (MenuApplication) getApplication();
 //        mTracker = application.getDefaultTracker();
 
         setContentView(R.layout.activity_main);
