@@ -1,4 +1,4 @@
-package net.rivergod.sec.seoulrnd.android.menu_seoulrnd;
+package net.rivergod.sec.seoulrnd.android.menu;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

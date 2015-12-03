@@ -1,0 +1,45 @@
+{
+  "project_info": {
+    "project_id": "menu---seoulrnd",
+    "project_number": "439169060965",
+    "name": "MENU - SeoulRnD"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:439169060965:android:bd5e4d2287a0ea83",
+        "client_id": "android:net.rivergod.sec.seoulrnd.android.menu",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "net.rivergod.sec.seoulrnd.android.menu"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 2,
+          "analytics_property": {
+            "tracking_id": "UA-70959187-1"
+          }
+        },
+        "cloud_messaging_service": {
+          "status": 1,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 1
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "client_info": [],
+  "ARTIFACT_VERSION": "1"
+}

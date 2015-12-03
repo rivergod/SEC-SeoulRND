@@ -1,4 +1,4 @@
-package net.rivergod.sec.seoulrnd.android.menu_seoulrnd.dto;
+package net.rivergod.sec.seoulrnd.android.menu.dto;
 
 public class CuisineDTO {
 

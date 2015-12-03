@@ -1,15 +1,19 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
 
     defaultConfig {
-        applicationId "net.rivergod.sec.seoulrnd.android.menu_seoulrnd"
+        applicationId "net.rivergod.sec.seoulrnd.android.menu"
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+    }
+    lintOptions {
+        abortOnError false
     }
     signingConfigs {
         debug {
@@ -24,7 +28,7 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -35,11 +39,13 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
+    compile 'com.google.android.gms:play-services-analytics:8.3.0'
+
     compile 'de.greenrobot:eventbus:2.4.0'
 
     compile 'com.navercorp.volleyextensions:volley-caches:2.0.+'
-    compile 'com.navercorp.volleyextensions:volley-requests:2.0.+'
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.8.6'
 
     compile 'net.sourceforge.htmlcleaner:htmlcleaner:2.15'
+
 }

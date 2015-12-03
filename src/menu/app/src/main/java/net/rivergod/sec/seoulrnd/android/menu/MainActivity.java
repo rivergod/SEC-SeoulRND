@@ -1,4 +1,4 @@
-package net.rivergod.sec.seoulrnd.android.menu_seoulrnd;
+package net.rivergod.sec.seoulrnd.android.menu;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -11,18 +11,25 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.android.volley.VolleyError;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
-import net.rivergod.sec.seoulrnd.android.menu_seoulrnd.dto.CuisineDTO;
+import net.rivergod.sec.seoulrnd.android.menu.dto.DayCuisionsDTO;
 
 import java.util.Date;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
+    private Tracker mTracker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+//        AnalyticsApplication application = (AnalyticsApplication) getApplication();
+//        mTracker = application.getDefaultTracker();
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -41,6 +48,14 @@ public class MainActivity extends AppCompatActivity {
         Communicator.getEventBus().register(this);
 
         onChangeDate(null);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+//        Log.i(TAG, "Setting screen name: MainActivity");
+//        mTracker.setScreenName("MainActivity");
+//        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     @Override
@@ -75,11 +90,20 @@ public class MainActivity extends AppCompatActivity {
         Communicator.getMenu(null);
     }
 
-    public void onEvent(List<CuisineDTO> e) {
+    public void onEvent(DayCuisionsDTO e) {
         Log.d(TAG, "onEvent object e = " + e.getClass().getName() + ", value = " + e.toString());
+//        mTracker.send(new HitBuilders.EventBuilder()
+//                .setCategory("MainActivity")
+//                .setAction("onEvent(e)")
+//                .build());
     }
 
     public void onEvent(VolleyError error) {
         Log.d(TAG, "onEvent error = " + error.toString());
+//        mTracker.send(new HitBuilders.EventBuilder()
+//                .setCategory("MainActivity")
+//                .setAction("onEvent(error)")
+//                .build());
+
     }
 }
