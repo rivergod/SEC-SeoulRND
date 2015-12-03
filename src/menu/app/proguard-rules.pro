@@ -15,3 +15,10 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+-dontwarn com.fasterxml.jackson.**
+-dontwarn org.codehaus.jackson.**
+-dontwarn org.jaxen.**
+-dontwarn javax.xml.stream.**
+-dontwarn org.simpleframework.xml.**
+-dontwarn org.apache.tools.ant.Task
+-dontwarn org.apache.tools.ant.BuildException

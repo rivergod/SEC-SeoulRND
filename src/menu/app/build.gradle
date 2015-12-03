@@ -20,16 +20,18 @@ android {
             storeFile file("../keystores/debug.keystore")
         }
         release {
-//            storeFile file(System.getProperty("sec-seoulrnd.keystore.file", "release.keystore"))
-//            storePassword System.getProperty("sec-seoulrnd.keystore.password", "******")
-//            keyAlias System.getProperty("sec-seoulrnd.key.alias", "era")
-//            keyPassword System.getProperty("sec-seoulrnd.key.password", "******")
+            storeFile file(System.getProperty("sec-seoulrnd.keystore.file", "release.keystore"))
+            storePassword System.getProperty("sec-seoulrnd.keystore.password", "******")
+            keyAlias System.getProperty("sec-seoulrnd.key.alias", "era")
+            keyPassword System.getProperty("sec-seoulrnd.key.password", "******")
         }
     }
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            signingConfig signingConfigs.release
         }
     }
 }
