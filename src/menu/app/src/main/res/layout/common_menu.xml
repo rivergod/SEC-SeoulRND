@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/common_menu_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="50dp"
+    android:layout_marginBottom="60dp"
+    android:orientation="horizontal">
+
+    <View
+        android:id="@+id/common_menu_close"
+        android:layout_width="60dp"
+        android:layout_height="match_parent"/>
+
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="match_parent">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#14181b"
+            android:orientation="vertical">
+
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#000000"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#33373a"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:includeFontPadding="false"
+                android:background="#66607d8b"
+                android:gravity="center"
+                android:textColor="#e5e5e5"
+                android:textStyle="bold"
+                android:textSize="17sp"
+                android:text="Option Menu"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#000000"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#33373a"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:textColor="#e5e5e5"
+                    android:textStyle="bold"
+                    android:textSize="17sp"
+                    android:text="Alarm"/>
+
+                <CheckBox
+                    android:id="@+id/option_alarm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                     />
+
+            </LinearLayout>
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/round_rect_text_gray_line">
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#77FFFFFF">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:text="사업부"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:text="식사 시작"
+                        />
+
+                    <TextView
+                        android:layout_width="60dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:text="선택"
+                        />
+
+
+                </TableRow>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#FFFFFF"/>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#77FFFFFF">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="디자인경영"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="11:30"
+                        />
+
+                    <View
+                        android:id="@+id/menu_alarm_select_0"
+                        android:layout_width="60dp"
+                        android:layout_height="match_parent"
+                        />
+                </TableRow>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#FFFFFF"/>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#77FFFFFF">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="DMC 연구소"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="12:00"
+                        />
+
+                    <View
+                        android:id="@+id/menu_alarm_select_1"
+                        android:layout_width="60dp"
+                        android:layout_height="match_parent"
+                        />
+                </TableRow>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#FFFFFF"/>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#77FFFFFF">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="S/W 센터"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="12:20"
+                        />
+
+                    <View
+                        android:id="@+id/menu_alarm_select_2"
+                        android:layout_width="60dp"
+                        android:layout_height="match_parent"
+                        />
+                </TableRow>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#FFFFFF"/>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#77FFFFFF">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="@string/option_text"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="12:20" />
+
+                    <View
+                        android:id="@+id/menu_alarm_select_3"
+                        android:layout_width="60dp"
+                        android:layout_height="match_parent"
+                        />
+                </TableRow>
+
+            </TableLayout>
+
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#000000"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#33373a">
+
+            </View>
+
+            <TextView
+                android:id="@+id/option_license"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:includeFontPadding="false"
+                android:gravity="center"
+                android:textColor="#e5e5e5"
+                android:textStyle="bold"
+                android:textSize="17sp"
+                android:text="License"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#000000"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#33373a"/>
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="172.5dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/menu_position"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</LinearLayout>
