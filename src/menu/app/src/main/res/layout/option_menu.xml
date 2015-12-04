@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/common_menu_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="41dp"
+    android:orientation="horizontal">
+
+    <View
+        android:id="@+id/common_menu_close"
+        android:layout_width="60dp"
+        android:layout_height="match_parent"/>
+
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="match_parent">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#14181b"
+            android:orientation="vertical">
+
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#000000"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#33373a"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:includeFontPadding="false"
+                android:background="#66607d8b"
+                android:gravity="center"
+                android:textColor="#e5e5e5"
+                android:textStyle="bold"
+                android:textSize="17sp"
+                android:text="Option Menu"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#000000"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#33373a"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:textColor="#e5e5e5"
+                    android:textStyle="bold"
+                    android:textSize="17sp"
+                    android:text="Alarm Setting"/>
+                
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="10dp"
+                android:orientation="vertical"
+                android:background="@drawable/round_rect_text_gray_line">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp">
+
+                    <TextView
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:text="사업부"/>
+                    
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"/>
+
+                    <TextView
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:text="식사 시작"
+                        />
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:text="선택"
+                        />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#FFFFFF"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp">
+
+                    <TextView
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="디자인경영"/>
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"/>
+                    <TextView
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="11:30"
+                    />
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"/>
+                    
+                    <RelativeLayout
+                        android:id="@+id/menu_alarm_select_0_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:tag="0">
+
+                        <ImageView
+                            android:id="@+id/menu_alarm_select_0_check"
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_centerVertical="true"
+                            android:visibility="gone"
+                            android:background="@drawable/alarm_check"
+                            />
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#FFFFFF"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp">
+
+                    <TextView
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="DMC 연구소"/>
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"/>
+                    <TextView
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="12:00"
+                        />
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"/>
+
+                    <RelativeLayout
+                        android:id="@+id/menu_alarm_select_1_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:tag="1">
+
+                        <ImageView
+                            android:id="@+id/menu_alarm_select_1_check"
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_centerVertical="true"
+                            android:visibility="gone"
+                            android:background="@drawable/alarm_check"
+                            />
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#FFFFFF"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp">
+
+                    <TextView
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="SW 센터"/>
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"/>
+                    <TextView
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="12:20"
+                        />
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"/>
+
+                    <RelativeLayout
+                        android:id="@+id/menu_alarm_select_2_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:tag="2">
+
+                        <ImageView
+                            android:id="@+id/menu_alarm_select_2_check"
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_centerVertical="true"
+                            android:visibility="gone"
+                            android:background="@drawable/alarm_check"
+                            />
+
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#FFFFFF"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="9sp"
+                        android:text="@string/option_text"/>
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"/>
+                    <TextView
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="12:20"
+                        />
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"/>
+
+                    <RelativeLayout
+                        android:id="@+id/menu_alarm_select_3_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:tag="3">
+
+                        <ImageView
+                            android:id="@+id/menu_alarm_select_3_check"
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_centerVertical="true"
+                            android:visibility="gone"
+                            android:background="@drawable/alarm_check"
+                            />
+
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#FFFFFF"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp">
+
+                    <TextView
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:text="사용자 설정"/>
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"/>
+
+                    <TextView
+                        android:id="@+id/option_alarm_user_set_time"
+                        android:layout_width="110dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        />
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#FFFFFF"/>
+
+                    <RelativeLayout
+                        android:id="@+id/menu_alarm_select_4_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:tag="4">
+
+                        <ImageView
+                            android:id="@+id/menu_alarm_select_4_check"
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:layout_centerHorizontal="true"
+                            android:layout_centerVertical="true"
+                            android:visibility="gone"
+                            android:background="@drawable/alarm_check"
+                            />
+
+                    </RelativeLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:gravity="center"
+                android:textSize="10sp"
+                android:layout_marginBottom="10dp"
+                android:text="선택 하시면 식사 시작 시간에 알림이 울립니다."/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#000000"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#33373a"/>
+
+            <TextView
+                android:id="@+id/option_license"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:includeFontPadding="false"
+                android:gravity="center"
+                android:textColor="#e5e5e5"
+                android:textStyle="bold"
+                android:textSize="17sp"
+                android:text="@string/menu_license"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#000000"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.75dp"
+                android:background="#33373a"/>
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="160dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/menu_position"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</LinearLayout>

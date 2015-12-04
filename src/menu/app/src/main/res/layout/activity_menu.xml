@@ -11,169 +11,172 @@
         android:layout_weight="1"/>
 
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="360dp"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:orientation="horizontal"
-            android:gravity="center"
-            android:background="#262626">
+            android:background="#a6e5ff">
 
             <TextView
-                android:layout_width="280dp"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:paddingLeft="70dp"
+                android:layout_margin="5dp"
+                android:gravity="top"
+                android:textColor="#0073a3"
+                android:textSize="11sp"
+                android:text="@string/menu_sub_title"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:gravity="center"
-                android:textColor="#FFFFFF"
-                android:textSize="20sp"
+                android:textColor="#000000"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:text="@string/title"/>
+                android:text="@string/menu_title"/>
+
 
             <TextView
                 android:id="@+id/menu_top_title"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="bottom|right"
+                android:layout_margin="5dp"
+                android:textColor="#0073a3"
                 android:textSize="12sp"
                 />
 
-        </LinearLayout>
+        </RelativeLayout>
 
-        <LinearLayout
-            android:id="@+id/menu_bottom_layout"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="61dp"
-            android:orientation="vertical"
-            android:layout_alignParentBottom="true">
-            
-            <View
+            android:layout_height="match_parent">
+
+            <GridView
+                android:id="@+id/grid_menu_items"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#3c3c3c"/>
-            
+                android:layout_height="match_parent"
+                android:layout_above="@+id/menu_bottom_layout"
+                android:listSelector="@null"
+                android:numColumns="2"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp"
+                android:verticalSpacing="20dp"
+                android:gravity="center"
+                />
+
+
+            <include
+                layout="@layout/option_menu"/>
+
             <LinearLayout
-                android:orientation="horizontal"
+                android:id="@+id/menu_bottom_layout"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:background="#99d9dadc"
+                android:layout_height="41dp"
+                android:orientation="vertical"
+                android:layout_alignParentBottom="true"
                 >
-                
-                <RelativeLayout
-                    android:id="@+id/menu_tab_breakfast"
-                    android:layout_width="100dp"
-                    android:layout_height="match_parent">
-
-                    <View
-                        android:id="@+id/menu_tab_breakfast_select"
-                        android:layout_width="match_parent"
-                        android:layout_height="5dp"
-                        android:visibility="gone"
-                        android:background="#FF0000"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:textColor="#022a65"
-                        android:textStyle="bold"
-                        android:text="Breakfast" />
-
-
-                </RelativeLayout>
-                
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:background="#3c3c3c"/>
-
-                <RelativeLayout
-                    android:id="@+id/menu_tab_lunch"
-                    android:layout_width="100dp"
-                    android:layout_height="match_parent">
-
-                    <View
-                        android:id="@+id/menu_tab_lunch_select"
-                        android:layout_width="match_parent"
-                        android:visibility="gone"
-                        android:layout_height="5dp"
-                        android:background="#FF0000"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:textColor="#022a65"
-                        android:textStyle="bold"
-                        android:text="Lunch" />
-
-
-                </RelativeLayout>
 
                 <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:background="#3c3c3c"/>
-
-                <RelativeLayout
-                    android:id="@+id/menu_tab_dinner"
-                    android:layout_width="100dp"
-                    android:layout_height="match_parent">
-
-                    <View
-                        android:id="@+id/menu_tab_dinner_select"
-                        android:layout_width="match_parent"
-                        android:visibility="gone"
-                        android:layout_height="5dp"
-                        android:background="#FF0000"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:textColor="#022a65"
-                        android:textStyle="bold"
-                        android:text="Dinner" />
-
-                </RelativeLayout>
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:background="#3c3c3c"/>
-
-                <ImageView
-                    android:id="@+id/menu_tab_setting"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_margin="15dp"
-                    android:background="@drawable/icon_setting"
-                    />
+                    android:layout_height="1dp"
+                    android:background="#a6e5ff"/>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="#99d9dadc"
+                    >
+
+                    <RelativeLayout
+                        android:id="@+id/menu_tab_breakfast"
+                        android:layout_width="100dp"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/menu_tab_breakfast_select"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:textColor="#022a65"
+                            android:textStyle="bold"
+                            android:text="Breakfast" />
+
+
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#a6e5ff"/>
+
+                    <RelativeLayout
+                        android:id="@+id/menu_tab_lunch"
+                        android:layout_width="100dp"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/menu_tab_lunch_select"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:textColor="#022a65"
+                            android:textStyle="bold"
+                            android:text="Lunch" />
+
+
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#a6e5ff"/>
+
+                    <RelativeLayout
+                        android:id="@+id/menu_tab_dinner"
+                        android:layout_width="100dp"
+                        android:layout_height="match_parent">
+
+                        <TextView
+                            android:id="@+id/menu_tab_dinner_select"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:textColor="#022a65"
+                            android:textStyle="bold"
+                            android:text="Dinner" />
+
+                    </RelativeLayout>
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#a6e5ff"/>
+
+                    <ImageView
+                        android:id="@+id/menu_tab_setting"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginStart="15dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/icon_setting"
+                        />
+
+
+                </LinearLayout>
 
 
             </LinearLayout>
 
+        </RelativeLayout>
 
-        </LinearLayout>
-
-
-
-        <GridView
-            android:id="@+id/grid_menu_items"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/menu_bottom_layout"
-            android:layout_marginTop="50dp"
-            android:numColumns="2"
-            android:verticalSpacing="20dp"
-            android:gravity="center"
-            />
-
-
-        <include
-            layout="@layout/common_menu"/>
-    </RelativeLayout>
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"

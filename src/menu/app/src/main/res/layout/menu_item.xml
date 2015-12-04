@@ -3,97 +3,53 @@
     android:layout_width="150dp"
     android:layout_height="100dp"
     android:orientation="vertical"
-    android:background="@drawable/menu_item_bg">
+    android:background="@drawable/item_bg">
 
 
-    <RelativeLayout
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/menu_icon_place"
+        android:layout_width="80dp"
         android:layout_height="20dp"
-        android:padding="1dp">
+        android:layout_marginTop="2dp"
+        android:layout_gravity="center"
+         />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/menu_item_icon_place_img_frame" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            android:layout_marginTop="10dp"
-            android:background="#FFFFFF"/>
-
-        <ImageView
-            android:id="@+id/menu_icon_place"
-            android:layout_width="60dp"
-            android:layout_height="15dp"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            />
-
-    </RelativeLayout>
-
-    <RelativeLayout
+    <TextView
+        android:id="@+id/menu_item_name"
         android:layout_width="match_parent"
-        android:layout_marginStart="1dp"
-        android:layout_marginEnd="1dp"
-        android:layout_height="60dp"
-        android:background="#FFFFFF">
+        android:layout_height="23dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:gravity="center"
+        android:textColor="#2c236d"
+        android:textStyle="bold"
+        android:textSize="13sp"
+        android:text="Menu Name" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#661f96fe"
-            />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/menu_item_name"
-                android:layout_width="match_parent"
-                android:layout_height="25dp"
-                android:gravity="center"
-                android:textColor="#2c236d"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:text="Menu Name" />
-
-            <TextView
-                android:id="@+id/menu_item_side"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="2dp"
-                android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
-                android:textColor="#303030"
-                android:textSize="8sp"
-                android:text="Side menu"
-                />
-
-        </LinearLayout>
-
-
-
-    </RelativeLayout>
-
-    <View
+    <TextView
+        android:id="@+id/menu_item_side"
         android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:layout_marginStart="1dp"
-        android:layout_marginEnd="1dp"
-        android:background="#00FF00"/>
+        android:layout_height="27dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:textColor="#303030"
+        android:textSize="7.5sp"
+        android:text="Side menu"
+        />
 
     <TextView
         android:id="@+id/menu_item_calorie"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:textColor="#00FF00"
-        android:textSize="12sp"
+        android:layout_marginTop="4dp"
+        android:gravity="center_horizontal"
+        android:textColor="#FF0000"
+        android:textSize="11sp"
         android:text="Calorie"/>
+
+
+
 
 
 
