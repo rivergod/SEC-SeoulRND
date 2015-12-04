@@ -99,7 +99,7 @@ public class MenuActivity extends Activity implements CustomPopup.ButtonClickEve
     protected void onResume() {
         super.onResume();
         Log.i(TAG, "Setting screen name: MenuActivity");
-        mTracker.setScreenName("MainActivity");
+        mTracker.setScreenName("MenuActivity");
         mTracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
