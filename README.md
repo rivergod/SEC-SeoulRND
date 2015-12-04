@@ -1,2 +1,2 @@
 # SEC-SeoulRND
-Samsung Electronics SeoulRnD Utilities
+Samsung Electronics - Seoul R&D Center - Utilities
