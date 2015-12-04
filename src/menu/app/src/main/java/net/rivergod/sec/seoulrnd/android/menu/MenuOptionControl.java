@@ -1,13 +1,20 @@
 package net.rivergod.sec.seoulrnd.android.menu;
 
-import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MenuOptionControl {
+public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
+
+    protected static final String HOUR = "_hour";
+    protected static final String MINUTE = "_minute";
+    protected static final String SELECT = "_select";
 
     private LinearLayout lyMenu;
 
@@ -21,6 +28,238 @@ public class MenuOptionControl {
     private final int MOVE_PIXEL = 40;
 
     private boolean isOpen;
+
+    private TextView tvAlarmUserSet;
+
+    private ImageView ivAlarmCheck0;
+    private ImageView ivAlarmCheck1;
+    private ImageView ivAlarmCheck2;
+    private ImageView ivAlarmCheck3;
+    private ImageView ivAlarmCheck4;
+
+    private ImageView prevAlarm;
+
+    private int selectAlarmIndex = -1;
+
+    private CustomPopup popUp;
+
+    SharedPreferences.Editor prefsEditor;
+
+    @Override
+    public void onSetTime(String time) {
+        if(popUp != null){
+            popUp.dismiss();
+        }
+
+        int hour = -1;
+        int minute = -1;
+
+        if(time.length() == 3){
+            hour = Integer.parseInt(time.substring(0, 1));
+            minute = Integer.parseInt(time.substring(1, 3));
+        }else if(time.length() == 4){
+            hour = Integer.parseInt(time.substring(0, 2));
+            minute = Integer.parseInt(time.substring(2, 4));
+        }else{
+            if(time.length() == 0 || time.length() > 4){
+                setAlarmSelect(-1, false);
+            }
+
+            if(!checkPrevUserAlarmSet()){
+                setAlarmSelect(-1, false);
+            }
+        }
+
+
+
+        setUserTime(hour, minute);
+
+
+        setAlarm(hour, minute);
+
+
+    }
+
+    private void setAlarm(int hour, int minute){
+        if(hour < 24) {
+            prefsEditor.putInt(MenuActivity.ALARM_TAG + HOUR, hour);
+            prefsEditor.putInt(MenuActivity.ALARM_TAG + MINUTE, minute);
+            prefsEditor.commit();
+
+            if(hour != -1){
+                RegisterAlarm.register(tvAlarmUserSet.getContext(), hour, minute);
+            }
+
+        }
+    }
+
+
+    private boolean checkPrevUserAlarmSet(){
+
+        boolean returnValue = true;
+        if(tvAlarmUserSet != null){
+            if(tvAlarmUserSet.getText().toString().length() == 0){
+                returnValue = false;
+            }
+        }
+
+        return returnValue;
+    }
+
+    @Override
+    public void onSetTimeCancel() {
+        if(popUp != null){
+            popUp.dismiss();
+        }
+
+        if(!checkPrevUserAlarmSet()){
+            setAlarmSelect(-1, false);
+        }
+    }
+
+    @Override
+    public void onMessageOk() {
+        if(popUp != null){
+            popUp.dismiss();
+        }
+    }
+
+    public void init(MenuActivity activity){
+
+        SharedPreferences prefs = activity.getSharedPreferences(MenuActivity.ALARM_TAG, Context.MODE_PRIVATE);
+
+        prefsEditor = prefs.edit();
+
+        popUp = new CustomPopup(activity, this);
+
+        maxWidth = activity.getResources().getDimension(R.dimen.screen_max);
+        closeViewWidth = activity.getResources().getDimension(R.dimen.close_menu);
+
+        lyMenu = (LinearLayout) activity.findViewById(R.id.common_menu_layout);
+        lyMenu.setX(maxWidth);
+
+        activity.findViewById(R.id.menu_tab_setting).setOnClickListener(MenuShowClickListener);
+        activity.findViewById(R.id.common_menu_close).setOnClickListener(MenuShowClickListener);
+
+        activity.findViewById(R.id.menu_alarm_select_0_layout).setOnClickListener(AlarOptionClickListener);
+        activity.findViewById(R.id.menu_alarm_select_1_layout).setOnClickListener(AlarOptionClickListener);
+        activity.findViewById(R.id.menu_alarm_select_2_layout).setOnClickListener(AlarOptionClickListener);
+        activity.findViewById(R.id.menu_alarm_select_3_layout).setOnClickListener(AlarOptionClickListener);
+        activity.findViewById(R.id.menu_alarm_select_4_layout).setOnClickListener(AlarOptionClickListener);
+
+        tvAlarmUserSet = (TextView) activity.findViewById(R.id.option_alarm_user_set_time);
+
+        ivAlarmCheck0 = (ImageView) activity.findViewById(R.id.menu_alarm_select_0_check);
+        ivAlarmCheck1 = (ImageView) activity.findViewById(R.id.menu_alarm_select_1_check);
+        ivAlarmCheck2 = (ImageView) activity.findViewById(R.id.menu_alarm_select_2_check);
+        ivAlarmCheck3 = (ImageView) activity.findViewById(R.id.menu_alarm_select_3_check);
+        ivAlarmCheck4 = (ImageView) activity.findViewById(R.id.menu_alarm_select_4_check);
+
+        activity.findViewById(R.id.option_license).setOnClickListener(ShowLicense);
+
+
+        setAlarmSelect(prefs.getInt(MenuActivity.ALARM_TAG + SELECT, -1), true);
+        setUserTime(prefs.getInt(MenuActivity.ALARM_TAG + HOUR, -1), prefs.getInt(MenuActivity.ALARM_TAG + MINUTE, -1));
+
+    }
+
+    private void setUserTime(int hour, int minute){
+
+        String timeValue = "";
+
+        if(hour != -1 && hour < 24) {
+            timeValue = hour + ":" + minute;
+        }
+
+        tvAlarmUserSet.setText(timeValue);
+    }
+
+    private View.OnClickListener ShowLicense = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+            if(popUp != null){
+                popUp.setTitle("License", false);
+
+                popUp.show();
+            }
+        }
+    };
+
+    private View.OnClickListener AlarOptionClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            setAlarmSelect(Integer.parseInt((String) v.getTag()), false);
+        }
+    };
+
+    private void setAlarmSelect(int index, boolean isInit){
+
+        if(prevAlarm != null){
+            prevAlarm.setVisibility(View.GONE);
+            prevAlarm = null;
+        }
+
+        if(selectAlarmIndex != index) {
+            if (index == 0) {
+                prevAlarm = ivAlarmCheck0;
+                setAlarm(11, 30);
+            } else if (index == 1) {
+                prevAlarm = ivAlarmCheck1;
+                setAlarm(12, 00);
+            } else if (index == 2) {
+                prevAlarm = ivAlarmCheck2;
+                setAlarm(12, 20);
+            } else if (index == 3) {
+                prevAlarm = ivAlarmCheck3;
+                setAlarm(12, 20);
+            } else if (index == 4) {
+                prevAlarm = ivAlarmCheck4;
+                if(!isInit) {
+                    popUp.setTitle("Alarm Time Set", true);
+
+                    String setTime = tvAlarmUserSet.getText().toString();
+                    if(setTime.length() != 0){
+                        setTime = setTime.replaceAll(":","");
+                    }
+
+                    popUp.setTimeText(setTime);
+                    popUp.show();
+                }
+            }
+            if(prevAlarm != null) {
+                prevAlarm.setVisibility(View.VISIBLE);
+            }
+
+            selectAlarmIndex = index;
+        }else{
+            selectAlarmIndex = -1;
+        }
+
+        if(prefsEditor != null && !isInit) {
+            prefsEditor.putInt(MenuActivity.ALARM_TAG + SELECT, selectAlarmIndex);
+            prefsEditor.commit();
+        }
+
+        if(selectAlarmIndex == -1 && !isInit){
+            RegisterAlarm.unregister(tvAlarmUserSet.getContext());
+        }
+    }
+
+    private View.OnClickListener MenuShowClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.menu_tab_setting:
+                    menuOpen();
+                    break;
+
+                case R.id.common_menu_close:
+                    menuClose();
+                    break;
+            }
+        }
+    };
 
     public boolean isOpen(){
         return isOpen;
@@ -79,33 +318,5 @@ public class MenuOptionControl {
 
         timer.schedule(task, 0, FRAME);
     }
-
-    public void init(Activity activity){
-
-        maxWidth = activity.getResources().getDimension(R.dimen.screen_max);
-        closeViewWidth = activity.getResources().getDimension(R.dimen.close_menu);
-
-        lyMenu = (LinearLayout) activity.findViewById(R.id.common_menu_layout);
-        lyMenu.setX(maxWidth);
-
-        activity.findViewById(R.id.menu_tab_setting).setOnClickListener(MenuShowClickListener);
-        activity.findViewById(R.id.common_menu_close).setOnClickListener(MenuShowClickListener);
-
-    }
-
-    private View.OnClickListener MenuShowClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()){
-                case R.id.menu_tab_setting:
-                    menuOpen();
-                    break;
-
-                case R.id.common_menu_close:
-                    menuClose();
-                    break;
-            }
-        }
-    };
 
 }

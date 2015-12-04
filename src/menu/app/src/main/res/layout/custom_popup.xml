@@ -1,106 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="250dp"
-    android:layout_height="200dp"
-    android:background="@drawable/round_rect_white_box"
-    android:orientation="vertical">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#66000000">
+    
+    <LinearLayout
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/round_rect_white_box"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/custom_popup_title"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:gravity="center"
-        android:textStyle="bold"
-        android:textSize="25sp"
-        android:textColor="#666666"
-        />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:background="#666666"
-        />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:background="#000000"
-        />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <LinearLayout
-            android:id="@+id/custom_popup_msg_layout"
+        <TextView
+            android:id="@+id/custom_popup_title"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:orientation="vertical">
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textSize="25sp"
+            android:textColor="#666666"
+            />
 
-            <TextView
-                android:id="@+id/custom_popup_msg"
-                android:layout_width="match_parent"
-                android:layout_height="90dp"
-                android:scrollbars="vertical"
-                android:textColor="#000000"
-                android:textSize="10sp"
-                />
-
-            <TextView
-                android:id="@+id/custom_popup_msg_ok"
-                android:layout_width="100dp"
-                android:layout_height="30dp"
-                android:layout_marginTop="10dp"
-                android:layout_gravity="center"
-                android:textColor="#000000"
-                android:gravity="center"
-                android:text="OK"
-                android:background="@drawable/round_rect_line"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/custom_popup_time_layout"
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"
-            android:visibility="gone"
-            android:orientation="vertical">
+            android:layout_height="0.5dp"
+            android:background="#666666"
+            />
 
-            <EditText
-                android:id="@+id/custom_popup_set_time"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_margin="10dp"
-                android:inputType="number"
-                android:gravity="center"
-                android:textColor="#000000"
-                android:textSize="15sp"
-                android:hint=" 시간 분을 4자리로 표시"
-                />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#000000"
+            />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
             <LinearLayout
+                android:id="@+id/custom_popup_msg_layout"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:gravity="center">
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/custom_popup_set_time_cancel"
-                    android:layout_width="100dp"
-                    android:layout_height="30dp"
-                    android:layout_gravity="center"
-                    android:textColor="#FFFFFF"
-                    android:gravity="center"
-                    android:text="Cancel"
-                    android:background="@drawable/round_rect_blick_line"/>
+                    android:id="@+id/custom_popup_msg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxHeight="350dp"
+                    android:scrollbars="vertical"
+                    android:textColor="#000000"
+                    android:textSize="10sp"
+                    android:text="@string/menu_license_msg"
+                    />
 
                 <TextView
-                    android:id="@+id/custom_popup_set_time_ok"
+                    android:id="@+id/custom_popup_msg_ok"
                     android:layout_width="100dp"
                     android:layout_height="30dp"
+                    android:layout_marginTop="10dp"
                     android:layout_gravity="center"
-                    android:layout_marginStart="10dp"
                     android:textColor="#000000"
                     android:gravity="center"
                     android:text="OK"
@@ -108,14 +69,61 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/custom_popup_time_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:visibility="gone"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/custom_popup_set_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_margin="10dp"
+                    android:inputType="number"
+                    android:gravity="center"
+                    android:textColor="#000000"
+                    android:textSize="15sp"
+                    android:hint=" 시간 분을 4자리로 표시"
+                    />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/custom_popup_set_time_cancel"
+                        android:layout_width="100dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:textColor="#FFFFFF"
+                        android:gravity="center"
+                        android:text="Cancel"
+                        android:background="@drawable/round_rect_blick_line"/>
+
+                    <TextView
+                        android:id="@+id/custom_popup_set_time_ok"
+                        android:layout_width="100dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="10dp"
+                        android:textColor="#000000"
+                        android:gravity="center"
+                        android:text="OK"
+                        android:background="@drawable/round_rect_line"/>
+
+                </LinearLayout>
 
 
-        </LinearLayout>
+
+            </LinearLayout>
 
 
-    </RelativeLayout>
+        </RelativeLayout>
 
+    </LinearLayout>
 
-    
-
-</LinearLayout>
+</RelativeLayout>

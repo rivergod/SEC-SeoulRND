@@ -25,9 +25,11 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MenuActivity extends Activity implements CustomPopup.ButtonClickEvent {
+public class MenuActivity extends Activity {
 
     private static final String TAG = "MenuActivity";
+
+    protected  static final String ALARM_TAG = "Alarm";
 
     private final int TIME_TYPE_BREAKFAST = 0;
     private final int TIME_TYPE_LUNCH = 1;
@@ -50,50 +52,11 @@ public class MenuActivity extends Activity implements CustomPopup.ButtonClickEve
     private TextView tabLunchText;
     private TextView tabDinnerText;
 
-    private MenuOptionControl optionMenu;
-
-    private TextView tvAlarmUserSet;
-
-    private ImageView ivAlarmCheck0;
-    private ImageView ivAlarmCheck1;
-    private ImageView ivAlarmCheck2;
-    private ImageView ivAlarmCheck3;
-    private ImageView ivAlarmCheck4;
-
-    private ImageView prevAlarm;
-
-    private int selectAlarmIndex = -1;
+    private MenuOptionControl menuOption;
 
     private ProgressDialog progress;
 
     private Timer serverResponseCheck;
-
-    private CustomPopup popUp;
-
-    @Override
-    public void onSetTime(String time) {
-        if(popUp != null){
-            popUp.dismiss();
-        }
-
-        if(time.length() == 3){
-            time = time.charAt(0) + " : "+ time.substring(1, 3);
-        }else if(time.length() == 4){
-            time = time.substring(0,2) + " : "+time.substring(2,4);
-        }else{
-            time = "";
-        }
-
-        tvAlarmUserSet.setText(time);
-
-    }
-
-    @Override
-    public void onClose() {
-        if(popUp != null){
-            popUp.dismiss();
-        }
-    }
 
     @Override
     protected void onResume() {
@@ -107,29 +70,13 @@ public class MenuActivity extends Activity implements CustomPopup.ButtonClickEve
         Communicator.getMenu(null);
     }
 
-    private View.OnClickListener ShowLicense = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-
-            if(popUp != null){
-                popUp.setTitle("Title", false);
-                popUp.setMSG("Message");
-
-                popUp.show();
-            }
-        }
-    };
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
-        popUp = new CustomPopup(this, this);
-
-        optionMenu = new MenuOptionControl();
-        optionMenu.init(this);
+        menuOption = new MenuOptionControl();
+        menuOption.init(MenuActivity.this);
 
         GridView gridMenuItems = (GridView) findViewById(R.id.grid_menu_items);
 
@@ -149,22 +96,6 @@ public class MenuActivity extends Activity implements CustomPopup.ButtonClickEve
         tabBreakfastText = (TextView) findViewById(R.id.menu_tab_breakfast_select);
         tabLunchText = (TextView) findViewById(R.id.menu_tab_lunch_select);
         tabDinnerText = (TextView) findViewById(R.id.menu_tab_dinner_select);
-
-        findViewById(R.id.menu_alarm_select_0_layout).setOnClickListener(AlarOptionClickListener);
-        findViewById(R.id.menu_alarm_select_1_layout).setOnClickListener(AlarOptionClickListener);
-        findViewById(R.id.menu_alarm_select_2_layout).setOnClickListener(AlarOptionClickListener);
-        findViewById(R.id.menu_alarm_select_3_layout).setOnClickListener(AlarOptionClickListener);
-        findViewById(R.id.menu_alarm_select_4_layout).setOnClickListener(AlarOptionClickListener);
-
-        tvAlarmUserSet = (TextView) findViewById(R.id.option_alarm_user_set_time);
-
-        ivAlarmCheck0 = (ImageView) findViewById(R.id.menu_alarm_select_0_check);
-        ivAlarmCheck1 = (ImageView) findViewById(R.id.menu_alarm_select_1_check);
-        ivAlarmCheck2 = (ImageView) findViewById(R.id.menu_alarm_select_2_check);
-        ivAlarmCheck3 = (ImageView) findViewById(R.id.menu_alarm_select_3_check);
-        ivAlarmCheck4 = (ImageView) findViewById(R.id.menu_alarm_select_4_check);
-
-        findViewById(R.id.option_license).setOnClickListener(ShowLicense);
 
         setDate();
 
@@ -231,61 +162,22 @@ public class MenuActivity extends Activity implements CustomPopup.ButtonClickEve
         tabLunchText.setTextColor(Color.rgb(2, 4, 101));
         tabDinnerText.setTextColor(Color.rgb(2, 4, 101));
 
-        ArrayList<CuisineDTO> setAapterItems = new ArrayList<>();
+        ArrayList<CuisineDTO> setAdapterItems = new ArrayList<>();
 
         if (timeType == TIME_TYPE_BREAKFAST) {
-            setAapterItems = menuBreakfast;
+            setAdapterItems = menuBreakfast;
             tabBreakfastText.setTextColor(Color.WHITE);
             tabBreakfast.setBackgroundColor(Color.rgb(166, 229, 255));
         } else if (timeType == TIME_TYPE_LUNCH) {
-            setAapterItems = menuLunch;
+            setAdapterItems = menuLunch;
             tabLunchText.setTextColor(Color.WHITE);
             tabLunch.setBackgroundColor(Color.rgb(166, 229, 255));
         } else if (timeType == TIME_TYPE_DINNER) {
-            setAapterItems = menuDinner;
+            setAdapterItems = menuDinner;
             tabDinnerText.setTextColor(Color.WHITE);
             tabDinner.setBackgroundColor(Color.rgb(166, 229, 255));
         }
-        adapter.setItems(setAapterItems);
-    }
-
-    private View.OnClickListener AlarOptionClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            setAlarmSelect(Integer.parseInt((String) v.getTag()));
-        }
-    };
-
-    private void setAlarmSelect(int index){
-
-        if(prevAlarm != null){
-            prevAlarm.setVisibility(View.GONE);
-            prevAlarm = null;
-        }
-
-        if(selectAlarmIndex != index) {
-            if (index == 0) {
-                prevAlarm = ivAlarmCheck0;
-            } else if (index == 1) {
-                prevAlarm = ivAlarmCheck1;
-            } else if (index == 2) {
-                prevAlarm = ivAlarmCheck2;
-            } else if (index == 3) {
-                prevAlarm = ivAlarmCheck3;
-            } else if (index == 4) {
-                prevAlarm = ivAlarmCheck4;
-                popUp.setTitle("Alarm Time Set", true);
-                popUp.show();
-
-            }
-            if(prevAlarm != null) {
-                prevAlarm.setVisibility(View.VISIBLE);
-            }
-
-            selectAlarmIndex = index;
-        }else{
-            selectAlarmIndex = -1;
-        }
+        adapter.setItems(setAdapterItems);
     }
 
     private View.OnClickListener TabClickListener = new View.OnClickListener() {
@@ -302,10 +194,10 @@ public class MenuActivity extends Activity implements CustomPopup.ButtonClickEve
                     setAdapterItems(TIME_TYPE_DINNER);
                     break;
                 case R.id.menu_tab_setting:
-                    if (optionMenu.isOpen()) {
-                        optionMenu.menuClose();
+                    if (menuOption.isOpen()) {
+                        menuOption.menuClose();
                     } else {
-                        optionMenu.menuOpen();
+                        menuOption.menuOpen();
                     }
                     break;
             }
