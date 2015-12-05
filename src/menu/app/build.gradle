@@ -9,8 +9,8 @@ android {
         applicationId "net.rivergod.sec.seoulrnd.android.menu"
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 5
-        versionName "0.9.4"
+        versionCode 6
+        versionName "0.9.5"
     }
     lintOptions {
         abortOnError false
