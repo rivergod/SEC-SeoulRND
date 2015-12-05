@@ -8,8 +8,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class RegisterAlarm extends BroadcastReceiver {
 
@@ -25,7 +28,6 @@ public class RegisterAlarm extends BroadcastReceiver {
         calendar.set(Calendar.HOUR_OF_DAY, hour);
         calendar.set(Calendar.MINUTE, minute);
         calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
 
         AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
@@ -48,20 +50,25 @@ public class RegisterAlarm extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String name = intent.getAction();
         if(name.equals(ALARM_TAG)){
-            NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, new Intent(context, MenuActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
 
-            Notification.Builder mBuilder = new Notification.Builder(context);
-            mBuilder.setSmallIcon(R.drawable.dishes);
-            mBuilder.setTicker("식사 시간 입니다.");
-            mBuilder.setWhen(System.currentTimeMillis());
-            mBuilder.setContentTitle("오늘은 머먹지?");
-            mBuilder.setContentText("맛있게 드세요 ^^");
-            mBuilder.setDefaults(Notification.DEFAULT_VIBRATE);
-            mBuilder.setContentIntent(pendingIntent);
-            mBuilder.setAutoCancel(true);
+            int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+            if(day != Calendar.SUNDAY && day != Calendar.SATURDAY) {
+                NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, new Intent(context, MenuActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
 
-            nm.notify(111, mBuilder.build());
+                Notification.Builder mBuilder = new Notification.Builder(context);
+                mBuilder.setSmallIcon(R.drawable.dishes);
+                mBuilder.setTicker("식사 시간 입니다.");
+                mBuilder.setWhen(System.currentTimeMillis());
+                mBuilder.setContentTitle("오늘은 머먹지?");
+                mBuilder.setContentText("맛있게 드세요 ^^");
+                mBuilder.setDefaults(Notification.DEFAULT_VIBRATE);
+                mBuilder.setContentIntent(pendingIntent);
+                mBuilder.setAutoCancel(true);
+
+                nm.notify(111, mBuilder.build());
+            }
+
         }else if(name.equals(Intent.ACTION_BOOT_COMPLETED)){
 
             SharedPreferences prefs = context.getSharedPreferences(MenuActivity.ALARM_TAG, Context.MODE_PRIVATE);

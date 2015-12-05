@@ -70,8 +70,6 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
             }
         }
 
-
-
         setUserTime(hour, minute);
 
 
@@ -148,6 +146,7 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
         activity.findViewById(R.id.menu_alarm_select_4_layout).setOnClickListener(AlarOptionClickListener);
 
         tvAlarmUserSet = (TextView) activity.findViewById(R.id.option_alarm_user_set_time);
+        tvAlarmUserSet.setOnClickListener(AlarOptionClickListener);
 
         ivAlarmCheck0 = (ImageView) activity.findViewById(R.id.menu_alarm_select_0_check);
         ivAlarmCheck1 = (ImageView) activity.findViewById(R.id.menu_alarm_select_1_check);
@@ -189,7 +188,19 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
     private View.OnClickListener AlarOptionClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            setAlarmSelect(Integer.parseInt((String) v.getTag()), false);
+            if(v.getId() == R.id.option_alarm_user_set_time){
+                popUp.setTitle("Alarm Time Set", true);
+
+                String setTime = tvAlarmUserSet.getText().toString();
+                if(setTime.length() != 0){
+                    setTime = setTime.replaceAll(":","");
+                }
+
+                popUp.setTimeText(setTime);
+                popUp.show();
+            }else {
+                setAlarmSelect(Integer.parseInt((String) v.getTag()), false);
+            }
         }
     };
 
@@ -216,15 +227,13 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
             } else if (index == 4) {
                 prevAlarm = ivAlarmCheck4;
                 if(!isInit) {
-                    popUp.setTitle("Alarm Time Set", true);
 
                     String setTime = tvAlarmUserSet.getText().toString();
-                    if(setTime.length() != 0){
-                        setTime = setTime.replaceAll(":","");
+                    if(setTime.length() == 0){
+                        popUp.setTitle("Alarm Time Set", true);
+                        popUp.setTimeText("");
+                        popUp.show();
                     }
-
-                    popUp.setTimeText(setTime);
-                    popUp.show();
                 }
             }
             if(prevAlarm != null) {
