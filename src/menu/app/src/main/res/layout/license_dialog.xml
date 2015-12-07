@@ -51,7 +51,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="12sp"
-                    android:text="이 프로젝트는 다음 홈페이지에서 관리되고 있습니다.\nUI/UX, 런처아이콘, 개발, 아이디어 도움을 주실 분은 WIKI를 통해 참여 하실 수 있습니다."
+                    android:text="이 프로젝트는 다음 홈페이지에서 관리되고 있습니다.\nUI/UX, 런처아이콘, 개발, 아이디어 도움을 주실 분은 Issues를 통해 참여 하실 수 있습니다."
                     />
 
                 <Button
