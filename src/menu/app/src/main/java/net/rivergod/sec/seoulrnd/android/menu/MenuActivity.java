@@ -78,6 +78,15 @@ public class MenuActivity extends Activity {
         menuOption = new MenuOptionControl();
         menuOption.init(MenuActivity.this);
 
+        menuOption.setShowLicense(this, new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                LicenseDialog licenseDialog = new LicenseDialog(MenuActivity.this);
+
+                licenseDialog.show();
+            }
+        });
+
         GridView gridMenuItems = (GridView) findViewById(R.id.grid_menu_items);
 
         adapter = new MenuItemAdapter(this);
@@ -264,9 +273,16 @@ public class MenuActivity extends Activity {
     }
 
     public void onEvent(VolleyError error) {
+
         mTracker.send(new HitBuilders.EventBuilder()
                 .setCategory("MenuActivity")
                 .setAction("onEvent(error)")
                 .build());
+
+        if (progress != null) {
+            progress.dismiss();
+        }
+
+        Toast.makeText(getApplicationContext(), "Network 연결을 확인 하세요.\n Server 응답이 없습니다.", Toast.LENGTH_SHORT).show();
     }
 }

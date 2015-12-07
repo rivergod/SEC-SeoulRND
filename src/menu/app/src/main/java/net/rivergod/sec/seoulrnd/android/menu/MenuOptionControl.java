@@ -1,5 +1,6 @@
 package net.rivergod.sec.seoulrnd.android.menu;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.View;
@@ -123,7 +124,6 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
     }
 
     public void init(MenuActivity activity){
-
         SharedPreferences prefs = activity.getSharedPreferences(MenuActivity.ALARM_TAG, Context.MODE_PRIVATE);
 
         prefsEditor = prefs.edit();
@@ -184,6 +184,30 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
             }
         }
     };
+
+    public View.OnClickListener getShowLicense() {
+        return ShowLicense;
+    }
+
+    public void setShowLicense(Activity mainClass, View.OnClickListener showLicense) {
+        if (showLicense == null) {
+            ShowLicense = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if (popUp != null) {
+                        popUp.setTitle("License", false);
+
+                        popUp.show();
+                    }
+                }
+            };
+        } else {
+            ShowLicense = showLicense;
+        }
+
+        mainClass.findViewById(R.id.option_license).setOnClickListener(ShowLicense);
+    }
 
     private View.OnClickListener AlarOptionClickListener = new View.OnClickListener() {
         @Override

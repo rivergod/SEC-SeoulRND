@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#66000000">
+    
+    <LinearLayout
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/round_rect_white_box"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/custom_popup_title"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textSize="25sp"
+            android:textColor="#666666"
+            android:text="About &amp; License"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#666666"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#000000"
+            />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/custom_popup_msg_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#000000"
+                    android:textSize="12sp"
+                    android:text="이 프로젝트는 다음 홈페이지에서 관리되고 있습니다.\nUI/UX, 런처아이콘, 개발, 아이디어 도움을 주실 분은 WIKI를 통해 참여 하실 수 있습니다."
+                    />
+
+                <Button
+                    android:id="@+id/license_go_page_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="바로가기"
+                    />
+
+                <TextView
+                    android:id="@+id/custom_popup_msg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxHeight="250dp"
+                    android:scrollbars="vertical"
+                    android:textColor="#000000"
+                    android:textSize="10sp"
+                    android:text=""
+                    />
+
+                <TextView
+                    android:id="@+id/custom_popup_msg_ok"
+                    android:layout_width="100dp"
+                    android:layout_height="30dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_gravity="center"
+                    android:textColor="#000000"
+                    android:gravity="center"
+                    android:text="OK"
+                    android:background="@drawable/round_rect_line"/>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>
