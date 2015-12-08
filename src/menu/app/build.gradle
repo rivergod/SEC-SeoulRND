@@ -7,10 +7,10 @@ android {
 
     defaultConfig {
         applicationId "net.rivergod.sec.seoulrnd.android.menu"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 23
-        versionCode 7
-        versionName "0.9.6"
+        versionCode 8
+        versionName "0.9.7"
     }
     lintOptions {
         abortOnError false

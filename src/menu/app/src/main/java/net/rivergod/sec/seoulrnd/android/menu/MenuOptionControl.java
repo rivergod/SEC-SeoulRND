@@ -191,7 +191,7 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
         String timeValue = "";
 
         if(hour != -1 && hour < 24) {
-            timeValue = hour + ":" + (minute == 0 ? "00":minute);
+            timeValue = (hour < 10 ? "0"+hour : hour) + ":" + (minute < 10 ? "0"+minute :minute);
         }
 
         tvAlarmUserSet.setText(timeValue);

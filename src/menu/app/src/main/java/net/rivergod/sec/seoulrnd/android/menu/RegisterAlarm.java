@@ -28,7 +28,6 @@ public class RegisterAlarm extends BroadcastReceiver {
         long nowTime = System.currentTimeMillis();
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(nowTime);
         calendar.set(Calendar.HOUR_OF_DAY, hour);
         calendar.set(Calendar.MINUTE, minute);
         calendar.set(Calendar.SECOND, 0);
@@ -45,7 +44,10 @@ public class RegisterAlarm extends BroadcastReceiver {
         Intent intent = new Intent(ALARM_TAG);
         PendingIntent pIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
         alarm.cancel(pIntent);
-        alarm.setRepeating(AlarmManager.RTC_WAKEUP, setTime, NEXT_DAY, pIntent);
+//        alarm.setRepeating(AlarmManager.RTC_WAKEUP, setTime, NEXT_DAY, pIntent);
+        alarm.setExact(AlarmManager.RTC_WAKEUP, setTime, pIntent);
+
+
     }
 
     public static void unregister(Context context){
@@ -62,6 +64,11 @@ public class RegisterAlarm extends BroadcastReceiver {
         String name = intent.getAction();
         if(name.equals(ALARM_TAG)){
 
+            Calendar calendar = Calendar.getInstance();
+            int hour = calendar.get(Calendar.HOUR_OF_DAY);
+            int minute = calendar.get(Calendar.MINUTE);
+            register(context, hour, minute);
+
             int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
             if(day != Calendar.SUNDAY && day != Calendar.SATURDAY) {
                 NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -71,7 +78,7 @@ public class RegisterAlarm extends BroadcastReceiver {
                 mBuilder.setSmallIcon(R.drawable.dishes);
                 mBuilder.setTicker("식사 시간 입니다.");
                 mBuilder.setWhen(System.currentTimeMillis());
-                mBuilder.setContentTitle("오늘은 머먹지?");
+                mBuilder.setContentTitle("오늘은 뭐먹지?");
                 mBuilder.setContentText("맛있게 드세요 ^^");
                 mBuilder.setDefaults(Notification.DEFAULT_VIBRATE);
                 mBuilder.setContentIntent(pendingIntent);
