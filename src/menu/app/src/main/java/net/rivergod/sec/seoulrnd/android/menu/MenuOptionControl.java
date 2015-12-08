@@ -3,6 +3,7 @@ package net.rivergod.sec.seoulrnd.android.menu;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -55,12 +56,11 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
         int hour = -1;
         int minute = -1;
 
-        if(time.length() == 3){
-            hour = Integer.parseInt(time.substring(0, 1));
-            minute = Integer.parseInt(time.substring(1, 3));
-        }else if(time.length() == 4){
-            hour = Integer.parseInt(time.substring(0, 2));
-            minute = Integer.parseInt(time.substring(2, 4));
+        if(time.length() == 3 || time.length() == 4){
+            int[] convertTimeValues = convertTime(time);
+
+            hour = convertTimeValues[0];
+            minute = convertTimeValues[1];
         }else{
             if(time.length() == 0 || time.length() > 4){
                 setAlarmSelect(-1, false);
@@ -76,6 +76,30 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
 
         setAlarm(hour, minute);
 
+
+    }
+
+    private int[] convertTime(String time){
+
+        int[] returnValue = new int[2];
+
+        int hour = -1;
+        int minute = -1;
+        if(time != null) {
+            time = time.replaceAll(":","");
+            if (time.length() == 3) {
+                hour = Integer.parseInt(time.substring(0, 1));
+                minute = Integer.parseInt(time.substring(1, 3));
+            } else if (time.length() == 4) {
+                hour = Integer.parseInt(time.substring(0, 2));
+                minute = Integer.parseInt(time.substring(2, 4));
+            }
+        }
+
+        returnValue[0] = hour;
+        returnValue[1] = minute;
+
+        return returnValue;
 
     }
 
@@ -167,7 +191,7 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
         String timeValue = "";
 
         if(hour != -1 && hour < 24) {
-            timeValue = hour + ":" + minute;
+            timeValue = hour + ":" + (minute == 0 ? "00":minute);
         }
 
         tvAlarmUserSet.setText(timeValue);
@@ -257,6 +281,9 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
                         popUp.setTitle("Alarm Time Set", true);
                         popUp.setTimeText("");
                         popUp.show();
+                    }else{
+                        int[] convertTimeValues = convertTime(setTime);
+                        setAlarm(convertTimeValues[0], convertTimeValues[1]);
                     }
                 }
             }

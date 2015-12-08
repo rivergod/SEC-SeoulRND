@@ -17,6 +17,7 @@ import java.util.Date;
 public class RegisterAlarm extends BroadcastReceiver {
 
     private static final String ALARM_TAG= "net.rivergod.sec.seoulrnd.android.menu.alarm";
+    private static final long NEXT_DAY = 1000 * 60 * 60 * 24L;
 
     public static void register(Context context, int hour, int minute){
 
@@ -24,17 +25,27 @@ public class RegisterAlarm extends BroadcastReceiver {
             return;
         }
 
+        long nowTime = System.currentTimeMillis();
+
         Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(nowTime);
         calendar.set(Calendar.HOUR_OF_DAY, hour);
         calendar.set(Calendar.MINUTE, minute);
         calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        long setTime = calendar.getTimeInMillis();
+
+        if(setTime < nowTime ){
+            setTime += NEXT_DAY;
+        }
 
         AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(ALARM_TAG);
         PendingIntent pIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
         alarm.cancel(pIntent);
-        alarm.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 1000 * 60 * 60 * 24, pIntent);
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, setTime, NEXT_DAY, pIntent);
     }
 
     public static void unregister(Context context){

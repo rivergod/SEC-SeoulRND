@@ -86,7 +86,7 @@ public class MenuItemAdapter extends BaseAdapter {
 
         CuisineDTO item = items.get(position);
 
-        holder.ivIcon.setBackgroundResource(MenuItemIconResouce.getMenuIcon(item.getCafeteriaUrl()));
+        holder.ivIcon.setBackgroundResource(MenuItemIconResource.getMenuIcon(item.getCafeteriaUrl()));
 
         String title = item.getTitle();
         if (title.contains("l)")) {
