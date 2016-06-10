@@ -9,8 +9,8 @@ android {
         applicationId "net.rivergod.sec.seoulrnd.android.menu"
         minSdkVersion 19
         targetSdkVersion 23
-        versionCode 8
-        versionName "0.9.7"
+        versionCode 9
+        versionName "0.9.8"
     }
     lintOptions {
         abortOnError false
@@ -49,6 +49,6 @@ dependencies {
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.8.6'
 
     compile 'net.sourceforge.htmlcleaner:htmlcleaner:2.15'
-    compile 'com.tonicartos:superslim:+'
+    compile 'com.tonicartos:superslim:0.4.+'
 
 }
