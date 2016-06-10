@@ -1,0 +1,6 @@
+<lint>
+    <issue id="MissingTranslation">
+        <ignore regexp="ga_trackingId"/>
+        <ignore regexp="gcm_defaultSenderId"/>
+    </issue>
+</lint>
