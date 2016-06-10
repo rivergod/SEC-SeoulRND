@@ -3,8 +3,8 @@ package net.rivergod.sec.seoulrnd.android.menu;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -18,6 +18,8 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
     protected static final String MINUTE = "_minute";
     protected static final String SELECT = "_select";
 
+    private MenuActivity activity;
+
     private LinearLayout lyMenu;
 
     private float maxWidth;
@@ -30,6 +32,11 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
     private final int MOVE_PIXEL = 40;
 
     private boolean isOpen;
+
+    private ImageView campus1Check;
+    private ImageView campus2Check;
+    private ViewGroup campus1Layout;
+    private ViewGroup campus2Layout;
 
     private TextView tvAlarmUserSet;
 
@@ -148,6 +155,9 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
     }
 
     public void init(MenuActivity activity){
+
+        this.activity = activity;
+
         SharedPreferences prefs = activity.getSharedPreferences(MenuActivity.ALARM_TAG, Context.MODE_PRIVATE);
 
         prefsEditor = prefs.edit();
@@ -169,6 +179,14 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
         activity.findViewById(R.id.menu_alarm_select_3_layout).setOnClickListener(AlarOptionClickListener);
         activity.findViewById(R.id.menu_alarm_select_4_layout).setOnClickListener(AlarOptionClickListener);
 
+        campus1Layout = (ViewGroup)  activity.findViewById(R.id.orderCampus1_layout);
+        campus2Layout = (ViewGroup)  activity.findViewById(R.id.orderCampus2_layout);
+        campus1Layout.setOnClickListener(campusOrderClickListener);
+        campus2Layout.setOnClickListener(campusOrderClickListener);
+
+        campus1Check = (ImageView) activity.findViewById(R.id.orderCampus1);
+        campus2Check = (ImageView) activity.findViewById(R.id.orderCampus2);
+
         tvAlarmUserSet = (TextView) activity.findViewById(R.id.option_alarm_user_set_time);
         tvAlarmUserSet.setOnClickListener(AlarOptionClickListener);
 
@@ -180,7 +198,7 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
 
         activity.findViewById(R.id.option_license).setOnClickListener(ShowLicense);
 
-
+        setCampusSelect(prefs.getInt(MenuActivity.CAMPUS_TAG, R.id.orderCampus2), true);
         setAlarmSelect(prefs.getInt(MenuActivity.ALARM_TAG + SELECT, -1), true);
         setUserTime(prefs.getInt(MenuActivity.ALARM_TAG + HOUR, -1), prefs.getInt(MenuActivity.ALARM_TAG + MINUTE, -1));
 
@@ -231,6 +249,37 @@ public class MenuOptionControl implements CustomPopup.ButtonClickEvent {
         }
 
         mainClass.findViewById(R.id.option_license).setOnClickListener(ShowLicense);
+    }
+
+
+    private View.OnClickListener campusOrderClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+            if(v.getId() == R.id.orderCampus1_layout) {
+                setCampusSelect(R.id.orderCampus1, false);
+            } else {
+                setCampusSelect(R.id.orderCampus2, false);
+            }
+        }
+    };
+
+    private void setCampusSelect(int campusId, boolean isInit){
+
+        if(campusId == R.id.orderCampus1) {
+            campus1Check.setVisibility(View.VISIBLE);
+            campus2Check.setVisibility(View.INVISIBLE);
+        } else {
+            campus1Check.setVisibility(View.INVISIBLE);
+            campus2Check.setVisibility(View.VISIBLE);
+        }
+
+        if(!isInit) {
+            prefsEditor.putInt(MenuActivity.CAMPUS_TAG, campusId);
+            prefsEditor.commit();
+
+            activity.campusChanged();
+        }
     }
 
     private View.OnClickListener AlarOptionClickListener = new View.OnClickListener() {

@@ -58,19 +58,16 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <GridView
+            <android.support.v7.widget.RecyclerView
                 android:id="@+id/grid_menu_items"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_above="@+id/menu_bottom_layout"
                 android:listSelector="@null"
                 android:numColumns="2"
-                android:paddingTop="20dp"
-                android:paddingBottom="20dp"
-                android:verticalSpacing="20dp"
-                android:gravity="center"
-                />
-
+                android:layout_marginTop="1dp"
+                android:layout_marginBottom="1dp"
+                android:gravity="center" />
 
             <include
                 layout="@layout/option_menu"/>
