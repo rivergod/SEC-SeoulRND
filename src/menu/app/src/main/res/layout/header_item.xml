@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/header_menu_item_name"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#77a6e5ff"
+    android:padding="10dip"
+    android:gravity="start"
+    android:textColor="#2c236d"
+    android:textStyle="bold"
+    android:textSize="15sp"
+    app:slm_headerDisplay="inline|sticky"
+    app:slm_isHeader="true"
+    />
+

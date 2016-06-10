@@ -4,9 +4,9 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.android.volley.VolleyError;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.tonicartos.superslim.LayoutManager;
 
 import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO;
 import net.rivergod.sec.seoulrnd.android.menu.dto.DayCuisionsDTO;
@@ -28,6 +29,8 @@ import java.util.TimerTask;
 public class MenuActivity extends Activity {
 
     private static final String TAG = "MenuActivity";
+
+    protected  static final String CAMPUS_TAG = "Campus";
 
     protected  static final String ALARM_TAG = "Alarm";
 
@@ -43,6 +46,7 @@ public class MenuActivity extends Activity {
 
     private MenuItemAdapter adapter;
 
+    private int selectedTime = TIME_TYPE_LUNCH;
     private RelativeLayout tabBreakfast;
     private RelativeLayout tabLunch;
     private RelativeLayout tabDinner;
@@ -87,7 +91,8 @@ public class MenuActivity extends Activity {
             }
         });
 
-        GridView gridMenuItems = (GridView) findViewById(R.id.grid_menu_items);
+        RecyclerView gridMenuItems = (RecyclerView) findViewById(R.id.grid_menu_items);
+        gridMenuItems.setLayoutManager(new LayoutManager(this));
 
         adapter = new MenuItemAdapter(this);
         gridMenuItems.setAdapter(adapter);
@@ -159,6 +164,9 @@ public class MenuActivity extends Activity {
     }
 
     private void setAdapterItems(int timeType) {
+
+        selectedTime = timeType;
+
         tabBreakfast.setBackground(null);
         tabLunch.setBackground(null);
         tabDinner.setBackground(null);
@@ -187,6 +195,10 @@ public class MenuActivity extends Activity {
             tabDinner.setBackgroundColor(Color.rgb(166, 229, 255));
         }
         adapter.setItems(setAdapterItems);
+    }
+
+    public void campusChanged() {
+        setAdapterItems(selectedTime);
     }
 
     private View.OnClickListener TabClickListener = new View.OnClickListener() {

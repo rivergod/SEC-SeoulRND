@@ -49,5 +49,6 @@ dependencies {
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.8.6'
 
     compile 'net.sourceforge.htmlcleaner:htmlcleaner:2.15'
+    compile 'com.tonicartos:superslim:+'
 
 }
