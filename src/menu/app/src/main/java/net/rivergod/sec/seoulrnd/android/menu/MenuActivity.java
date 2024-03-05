@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -12,19 +11,27 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.VolleyError;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
+//import com.android.volley.VolleyError;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.tonicartos.superslim.LayoutManager;
 
 import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO;
 import net.rivergod.sec.seoulrnd.android.menu.dto.DayCuisionsDTO;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MenuActivity extends Activity {
 
@@ -41,8 +48,6 @@ public class MenuActivity extends Activity {
     private ArrayList<CuisineDTO> menuBreakfast = new ArrayList<>();
     private ArrayList<CuisineDTO> menuLunch = new ArrayList<>();
     private ArrayList<CuisineDTO> menuDinner = new ArrayList<>();
-
-    private Tracker mTracker;
 
     private MenuItemAdapter adapter;
 
@@ -66,12 +71,31 @@ public class MenuActivity extends Activity {
     protected void onResume() {
         super.onResume();
         Log.i(TAG, "Setting screen name: MenuActivity");
-        mTracker.setScreenName("MenuActivity");
-        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     public void onChangeDate(final Date targetDate) {
-        Communicator.getMenu(null);
+        getMenu(null);
+    }
+
+    private void getMenu(Object o) {
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder().url("https://www.samsungwelstory.com/menu/seoulrnd/menu.jsp").build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+
+                Log.e(MenuActivity.class.getName(), e.getMessage());
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                Log.i(MenuActivity.class.getName(), response.body().string());
+            }
+        });
+
+
     }
 
     @Override
@@ -113,12 +137,7 @@ public class MenuActivity extends Activity {
 
         setDate();
 
-        MenuApplication application = (MenuApplication) getApplication();
-        mTracker = application.getDefaultTracker();
-
-        Communicator.init(getApplicationContext());
-        Communicator.getEventBus().register(this);
-        onChangeDate(null);
+       onChangeDate(null);
 
         progress = ProgressDialog.show(MenuActivity.this, "", "Menu data loading....", true);
 
@@ -276,25 +295,19 @@ public class MenuActivity extends Activity {
             }
             setAdapterItems(hour);
         }
-
-        mTracker.send(new HitBuilders.EventBuilder()
-                .setCategory("MenuActivity")
-                .setAction("onEvent(e)")
-                .build());
-
     }
 
-    public void onEvent(VolleyError error) {
-
-        mTracker.send(new HitBuilders.EventBuilder()
-                .setCategory("MenuActivity")
-                .setAction("onEvent(error)")
-                .build());
-
-        if (progress != null) {
-            progress.dismiss();
-        }
-
-        Toast.makeText(getApplicationContext(), "Network 연결을 확인 하세요.\n Server 응답이 없습니다.", Toast.LENGTH_SHORT).show();
-    }
+//    public void onEvent(VolleyError error) {
+//
+//        mTracker.send(new HitBuilders.EventBuilder()
+//                .setCategory("MenuActivity")
+//                .setAction("onEvent(error)")
+//                .build());
+//
+//        if (progress != null) {
+//            progress.dismiss();
+//        }
+//
+//        Toast.makeText(getApplicationContext(), "Network 연결을 확인 하세요.\n Server 응답이 없습니다.", Toast.LENGTH_SHORT).show();
+//    }
 }
