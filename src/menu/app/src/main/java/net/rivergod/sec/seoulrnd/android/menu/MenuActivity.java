@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -20,7 +21,14 @@ import com.tonicartos.superslim.LayoutManager;
 import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO;
 import net.rivergod.sec.seoulrnd.android.menu.dto.DayCuisionsDTO;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -29,8 +37,11 @@ import java.util.TimerTask;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MenuActivity extends Activity {
@@ -80,18 +91,97 @@ public class MenuActivity extends Activity {
     private void getMenu(Object o) {
         OkHttpClient client = new OkHttpClient();
 
-        Request request = new Request.Builder().url("https://www.samsungwelstory.com/menu/seoulrnd/menu.jsp").build();
+//        Request request = new Request
+//                .Builder()
+//                .url("https://www.samsungwelstory.com/menu/seoulrnd/menu.jsp")
+//                .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+//                .addHeader("Accept-Encoding", "gzip, deflate, br, zstd")
+//                .addHeader("Accept-Language", "ko,en-US;q=0.9,en;q=0.8,ja;q=0.7,zh;q=0.6")
+//                .addHeader("Cache-Control", "no-cache")
+//                .addHeader("Connection", "keep-alive")
+//                .addHeader("DNT", "1")
+//                .addHeader("Pragma", "no-cache")
+//                .addHeader("Sec-Fetch-Dest", "document")
+//                .addHeader("Sec-Fetch-Mode", "navigate")
+//                .addHeader("Sec-Fetch-Site", "none")
+//                .addHeader("Sec-Fetch-User", "?1")
+//                .addHeader("Upgrade-Insecure-Requests", "1")
+//                .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
+//                .addHeader("sec-ch-ua", "\"Chromium\";v=\"122\", \"Not(A:Brand\";v=\"24\", \"Google Chrome\";v=\"122\"")
+//                .addHeader("sec-ch-ua-mobile", "?0")
+//                .addHeader("sec-ch-ua-platform", "\"Windows\"")
+//                .build();
+
+        Request request = new Request
+                .Builder()
+                .url("https://www.samsungwelstory.com/menu/getSeoulRndMenuList.do?=")
+                .post(new FormBody
+                        .Builder()
+                        .add("meal_type", "2")
+                        .add("course", "AA")
+                        .add("dt", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                        .add("dtFlag", "1")
+                        .add("hallNm", "seoulrnd")
+                        .add("engYn", "N")
+                        .build())
+                .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
+                .addHeader("Referer", "https://www.samsungwelstory.com/menu/seoulrnd/menu.jsp")
+                .build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
 
                 Log.e(MenuActivity.class.getName(), e.getMessage());
+                onEvent(null);
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Log.i(MenuActivity.class.getName(), response.body().string());
+                String responseData = response.body().string();
+
+                Log.d(MenuActivity.class.getName(), responseData);
+
+                boolean isSuccess = false;
+
+                final DayCuisionsDTO e = new DayCuisionsDTO();
+                try {
+                    Object json = new JSONTokener(responseData).nextValue();
+
+                    if (json instanceof JSONArray){
+                        JSONArray receivedJson = (JSONArray)json;
+
+                        for (int i = 0 ; i < receivedJson.length(); i++) {
+                            JSONObject obj = receivedJson.getJSONObject(i);
+
+                            CuisineDTO c = new CuisineDTO();
+                            c.setMealCode(CuisineDTO.MEALCODE_LAUNCH);
+                            c.setCampusCode(CuisineDTO.CAMPUSCODE_2);
+                            c.setCafeteriaUrl("about:blank");
+                            c.setCafeteriaCode(0);
+                            c.setTitle(obj.getString("course_txt"));
+                            c.setContent(obj.getString("menu_name"));
+                            e.addCuisine(c);
+                        }
+                    }
+
+                    isSuccess = true;
+
+                } catch (JSONException ex) {
+                    throw new RuntimeException(ex);
+                }
+
+                if (!isSuccess) {
+                    registerServerResponse();
+                    return;
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onEvent(e);
+                    }
+                });
             }
         });
 
@@ -268,6 +358,39 @@ public class MenuActivity extends Activity {
         } else {
             menuDinner.clear();
         }
+
+//        // Start For Test
+//        e = new DayCuisionsDTO();
+//
+//        CuisineDTO c = new CuisineDTO();
+//        c.setMealCode(CuisineDTO.MEALCODE_BREAKFAST);
+//        c.setCampusCode(CuisineDTO.CAMPUSCODE_1);
+//        c.setCafeteriaUrl("about:blank");
+//        c.setCafeteriaCode(0);
+//        c.setTitle("Title 아침");
+//        c.setContent("Title 아침 구성");
+//        e.addCuisine(c);
+//
+//        c = new CuisineDTO();
+//        c.setMealCode(CuisineDTO.MEALCODE_LAUNCH);
+//        c.setCampusCode(CuisineDTO.CAMPUSCODE_2);
+//        c.setCafeteriaUrl("about:blank");
+//        c.setCafeteriaCode(0);
+//        c.setTitle("Title 점심");
+//        c.setContent("Title 점심 구성");
+//        e.addCuisine(c);
+//
+//
+//        c = new CuisineDTO();
+//        c.setMealCode(CuisineDTO.MEALCODE_DINNER);
+//        c.setCampusCode(CuisineDTO.CAMPUSCODE_1);
+//        c.setCafeteriaUrl("about:blank");
+//        c.setCafeteriaCode(0);
+//        c.setTitle("Title 저녁");
+//        c.setContent("Title 저녁 구성");
+//        e.addCuisine(c);
+//        // End For Test
+
 
         if (adapter != null) {
 
