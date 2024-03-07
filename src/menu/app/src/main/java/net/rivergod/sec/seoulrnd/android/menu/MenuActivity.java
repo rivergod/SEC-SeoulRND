@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -12,7 +11,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-//import com.android.volley.VolleyError;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -38,20 +36,15 @@ import java.util.TimerTask;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MenuActivity extends Activity {
 
+    protected static final String CAMPUS_TAG = "Campus";
+    protected static final String ALARM_TAG = "Alarm";
     private static final String TAG = "MenuActivity";
-
-    protected  static final String CAMPUS_TAG = "Campus";
-
-    protected  static final String ALARM_TAG = "Alarm";
-
     private final int TIME_TYPE_BREAKFAST = 0;
     private final int TIME_TYPE_LUNCH = 1;
     private final int TIME_TYPE_DINNER = 2;
@@ -63,19 +56,38 @@ public class MenuActivity extends Activity {
     private MenuItemAdapter adapter;
 
     private int selectedTime = TIME_TYPE_LUNCH;
+    private final View.OnClickListener TabClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.menu_tab_breakfast:
+                    setAdapterItems(TIME_TYPE_BREAKFAST);
+                    break;
+                case R.id.menu_tab_lunch:
+                    setAdapterItems(TIME_TYPE_LUNCH);
+                    break;
+                case R.id.menu_tab_dinner:
+                    setAdapterItems(TIME_TYPE_DINNER);
+                    break;
+                case R.id.menu_tab_setting:
+                    if (menuOption.isOpen()) {
+                        menuOption.menuClose();
+                    } else {
+                        menuOption.menuOpen();
+                    }
+                    break;
+            }
+        }
+    };
     private RelativeLayout tabBreakfast;
     private RelativeLayout tabLunch;
     private RelativeLayout tabDinner;
     private ImageView tabOption;
-
     private TextView tabBreakfastText;
     private TextView tabLunchText;
     private TextView tabDinnerText;
-
     private MenuOptionControl menuOption;
-
     private ProgressDialog progress;
-
     private Timer serverResponseCheck;
 
     @Override
@@ -148,20 +160,55 @@ public class MenuActivity extends Activity {
                 try {
                     Object json = new JSONTokener(responseData).nextValue();
 
-                    if (json instanceof JSONArray){
-                        JSONArray receivedJson = (JSONArray)json;
+                    if (json instanceof JSONArray) {
+                        JSONArray receivedJson = (JSONArray) json;
 
-                        for (int i = 0 ; i < receivedJson.length(); i++) {
+                        for (int i = 0; i < receivedJson.length(); i++) {
                             JSONObject obj = receivedJson.getJSONObject(i);
 
-                            CuisineDTO c = new CuisineDTO();
-                            c.setMealCode(CuisineDTO.MEALCODE_LAUNCH);
-                            c.setCampusCode(CuisineDTO.CAMPUSCODE_2);
-                            c.setCafeteriaUrl("about:blank");
-                            c.setCafeteriaCode(0);
-                            c.setTitle(obj.getString("course_txt"));
-                            c.setContent(obj.getString("menu_name"));
-                            e.addCuisine(c);
+                            String typicalMenu = obj.getString("typical_menu");
+                            String menuMealType = obj.getString("menu_meal_type");
+                            String menuCourseType = obj.getString("menu_course_type");
+                            String hallNo = obj.getString("hall_no");
+                            String id = menuMealType + menuCourseType + hallNo;
+
+                            Log.d(TAG, "menu id = " + id);
+
+                            if ("Y".equals(typicalMenu)) {
+                                CuisineDTO c = new CuisineDTO();
+                                if ("3".equals(menuMealType)) {
+                                    c.setMealCode(CuisineDTO.MEALCODE_DINNER);
+                                } else if ("2".equals(menuMealType)) {
+                                    c.setMealCode(CuisineDTO.MEALCODE_LAUNCH);
+                                } else {
+                                    c.setMealCode(CuisineDTO.MEALCODE_BREAKFAST);
+                                }
+                                c.setCampusCode(CuisineDTO.CAMPUSCODE_2);
+                                c.setCafeteriaCode(MenuItemIconResource.getMenuIcon( obj.getString("course_txt")));
+                                c.setCafeteriaCode(0);
+                                c.setTitle(obj.getString("menu_name"));
+                                c.setContent("");
+                                c.setCalorie(obj.getString("tot_kcal"));
+                                e.addCuisine(id, c);
+                            }
+                        }
+                        for (int i = 0; i < receivedJson.length(); i++) {
+                            JSONObject obj = receivedJson.getJSONObject(i);
+
+                            String typicalMenu = obj.getString("typical_menu");
+                            String menuMealType = obj.getString("menu_meal_type");
+                            String menuCourseType = obj.getString("menu_course_type");
+                            String hallNo = obj.getString("hall_no");
+                            String id = menuMealType + menuCourseType + hallNo;
+
+                            Log.d(TAG, "menu id = " + id);
+                            if (!"Y".equals(typicalMenu)) {
+                                CuisineDTO c = e.getCuisineById(id);
+
+                                if (c != null) {
+                                    c.setContent(c.getContent() + obj.getString("menu_name") + ",");
+                                }
+                            }
                         }
                     }
 
@@ -196,7 +243,7 @@ public class MenuActivity extends Activity {
         menuOption = new MenuOptionControl();
         menuOption.init(MenuActivity.this);
 
-        menuOption.setShowLicense(this, new View.OnClickListener(){
+        menuOption.setShowLicense(this, new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 LicenseDialog licenseDialog = new LicenseDialog(MenuActivity.this);
@@ -205,36 +252,36 @@ public class MenuActivity extends Activity {
             }
         });
 
-        RecyclerView gridMenuItems = (RecyclerView) findViewById(R.id.grid_menu_items);
+        RecyclerView gridMenuItems = findViewById(R.id.grid_menu_items);
         gridMenuItems.setLayoutManager(new LayoutManager(this));
 
         adapter = new MenuItemAdapter(this);
         gridMenuItems.setAdapter(adapter);
 
-        tabBreakfast = (RelativeLayout) findViewById(R.id.menu_tab_breakfast);
-        tabLunch = (RelativeLayout) findViewById(R.id.menu_tab_lunch);
-        tabDinner = (RelativeLayout) findViewById(R.id.menu_tab_dinner);
-        tabOption = (ImageView) findViewById(R.id.menu_tab_setting);
+        tabBreakfast = findViewById(R.id.menu_tab_breakfast);
+        tabLunch = findViewById(R.id.menu_tab_lunch);
+        tabDinner = findViewById(R.id.menu_tab_dinner);
+        tabOption = findViewById(R.id.menu_tab_setting);
 
         tabBreakfast.setOnClickListener(TabClickListener);
         tabLunch.setOnClickListener(TabClickListener);
         tabDinner.setOnClickListener(TabClickListener);
         tabOption.setOnClickListener(TabClickListener);
 
-        tabBreakfastText = (TextView) findViewById(R.id.menu_tab_breakfast_select);
-        tabLunchText = (TextView) findViewById(R.id.menu_tab_lunch_select);
-        tabDinnerText = (TextView) findViewById(R.id.menu_tab_dinner_select);
+        tabBreakfastText = findViewById(R.id.menu_tab_breakfast_select);
+        tabLunchText = findViewById(R.id.menu_tab_lunch_select);
+        tabDinnerText = findViewById(R.id.menu_tab_dinner_select);
 
         setDate();
 
-       onChangeDate(null);
+        onChangeDate(null);
 
         progress = ProgressDialog.show(MenuActivity.this, "", "Menu data loading....", true);
 
         registerServerResponse();
     }
 
-    private void registerServerResponse(){
+    private void registerServerResponse() {
 
         TimerTask task = new TimerTask() {
             @Override
@@ -255,7 +302,7 @@ public class MenuActivity extends Activity {
         serverResponseCheck.schedule(task, 5000);
     }
 
-    private void setDate(){
+    private void setDate() {
         Calendar cal = Calendar.getInstance();
         int month = cal.get(Calendar.MONTH) + 1;
         int day = cal.get(Calendar.DAY_OF_MONTH);
@@ -310,33 +357,9 @@ public class MenuActivity extends Activity {
         setAdapterItems(selectedTime);
     }
 
-    private View.OnClickListener TabClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.menu_tab_breakfast:
-                    setAdapterItems(TIME_TYPE_BREAKFAST);
-                    break;
-                case R.id.menu_tab_lunch:
-                    setAdapterItems(TIME_TYPE_LUNCH);
-                    break;
-                case R.id.menu_tab_dinner:
-                    setAdapterItems(TIME_TYPE_DINNER);
-                    break;
-                case R.id.menu_tab_setting:
-                    if (menuOption.isOpen()) {
-                        menuOption.menuClose();
-                    } else {
-                        menuOption.menuOpen();
-                    }
-                    break;
-            }
-        }
-    };
-
     public void onEvent(DayCuisionsDTO e) {
 
-        if(progress != null) {
+        if (progress != null) {
             progress.dismiss();
             serverResponseCheck.cancel();
         }

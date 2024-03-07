@@ -1,8 +1,12 @@
 package net.rivergod.sec.seoulrnd.android.menu;
 
+import android.util.Log;
+
 import java.util.HashMap;
 
 public class MenuItemIconResource {
+
+    private static final String TAG = MenuItemIconResource.class.getName();
 
     private static final HashMap<String, Integer> iconMap;
 
@@ -54,16 +58,20 @@ public class MenuItemIconResource {
         iconMap.put("menu_b_snap_juice", R.drawable.icon_snapsnack); //스낵 착즙 주스
 
 //        cafeteria_1_menu_03 // 테이스티가든
+
+        //
+        iconMap.put("봄이온소반", R.drawable.icon_soban);
     }
 
     public static int getMenuIcon(String url) {
-
-        url = url.substring(url.lastIndexOf("/") + 1, url.length() - 4);
+//        url = url.substring(url.lastIndexOf("/") + 1, url.length() - 4);
 
         int returnValue = 0;
         if(iconMap.containsKey(url)) {
            returnValue = iconMap.get(url);
         }
+
+        Log.d(TAG, "getMenu Icon url = " + url + " returnValue = " + returnValue);
 
         return returnValue;
     }

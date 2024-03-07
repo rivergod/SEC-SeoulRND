@@ -1,7 +1,9 @@
 package net.rivergod.sec.seoulrnd.android.menu.dto;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by rivergod on 15. 12. 3.
@@ -9,10 +11,10 @@ import java.util.List;
 public class DayCuisionsDTO {
 
     private String date;
-    private final List<CuisineDTO> cuisines;
+    private final Map<String, CuisineDTO> cuisines;
 
     public DayCuisionsDTO() {
-        cuisines = new ArrayList<CuisineDTO>();
+        cuisines = new HashMap<>();
     }
 
     public String getDate() {
@@ -24,11 +26,15 @@ public class DayCuisionsDTO {
     }
 
     public List<CuisineDTO> getCuisines() {
-        return cuisines;
+        return new ArrayList<CuisineDTO>(cuisines.values());
     }
 
-    public boolean addCuisine(CuisineDTO cuisine) {
-        return cuisines.add(cuisine);
+    public boolean addCuisine(String id, CuisineDTO cuisine) {
+        return cuisines.put(id, cuisine) != null;
+    }
+
+    public CuisineDTO getCuisineById(String id) {
+        return cuisines.get(id);
     }
 
     @Override

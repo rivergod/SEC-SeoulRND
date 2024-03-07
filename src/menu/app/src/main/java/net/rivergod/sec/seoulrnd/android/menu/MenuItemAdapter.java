@@ -252,7 +252,7 @@ public class MenuItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 tvSide.setText("");
             }
 
-            tvCalorie.setText(content.substring(lastIndexComma + 1, content.length()));
+            tvCalorie.setText(item.getCalorie());
         }
     }
 }

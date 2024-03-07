@@ -1,5 +1,7 @@
 package net.rivergod.sec.seoulrnd.android.menu.dto;
 
+import java.util.Objects;
+
 public class CuisineDTO {
 
     public static final Integer MEALCODE_BREAKFAST = 0;
@@ -16,6 +18,8 @@ public class CuisineDTO {
     private String cafeteriaUrl;
     private String title;
     private String content;
+
+    private String calorie;
 
     public Integer getMealCode() {
         return mealCode;
@@ -61,42 +65,37 @@ public class CuisineDTO {
         this.content = content;
     }
 
+    public String getCalorie() {
+        return calorie;
+    }
+
+    public void setCalorie(String calorie) {
+        this.calorie = calorie;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         CuisineDTO that = (CuisineDTO) o;
-
-        if (mealCode != null ? !mealCode.equals(that.mealCode) : that.mealCode != null)
-            return false;
-        if (campusCode != null ? !campusCode.equals(that.campusCode) : that.campusCode != null)
-            return false;
-        if (cafeteriaUrl != null ? !cafeteriaUrl.equals(that.cafeteriaUrl) : that.cafeteriaUrl != null)
-            return false;
-        if (title != null ? !title.equals(that.title) : that.title != null) return false;
-        return !(content != null ? !content.equals(that.content) : that.content != null);
-
+        return Objects.equals(mealCode, that.mealCode) && Objects.equals(campusCode, that.campusCode) && Objects.equals(cafeteriaCode, that.cafeteriaCode) && Objects.equals(cafeteriaUrl, that.cafeteriaUrl) && Objects.equals(title, that.title) && Objects.equals(content, that.content) && Objects.equals(calorie, that.calorie);
     }
 
     @Override
     public int hashCode() {
-        int result = mealCode != null ? mealCode.hashCode() : 0;
-        result = 31 * result + (campusCode != null ? campusCode.hashCode() : 0);
-        result = 31 * result + (cafeteriaUrl != null ? cafeteriaUrl.hashCode() : 0);
-        result = 31 * result + (title != null ? title.hashCode() : 0);
-        result = 31 * result + (content != null ? content.hashCode() : 0);
-        return result;
+        return Objects.hash(mealCode, campusCode, cafeteriaCode, cafeteriaUrl, title, content, calorie);
     }
 
     @Override
     public String toString() {
         return "CuisineDTO{" +
                 "mealCode=" + mealCode +
-                ", campusCode='" + campusCode + '\'' +
+                ", campusCode=" + campusCode +
+                ", cafeteriaCode=" + cafeteriaCode +
                 ", cafeteriaUrl='" + cafeteriaUrl + '\'' +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
+                ", calorie='" + calorie + '\'' +
                 '}';
     }
 }
