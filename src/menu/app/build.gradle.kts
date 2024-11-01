@@ -54,10 +54,10 @@ android {
         targetSdk = 35
 
         // Defines the version number of your app.
-        versionCode = 15
+        versionCode = 16
 
         // Defines a user-friendly version name for your app.
-        versionName = "0.9.14"
+        versionName = "0.9.15"
     }
 
     lint {
