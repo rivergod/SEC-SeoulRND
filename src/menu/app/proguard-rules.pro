@@ -22,3 +22,5 @@
 -dontwarn org.simpleframework.xml.**
 -dontwarn org.apache.tools.ant.Task
 -dontwarn org.apache.tools.ant.BuildException
+-dontwarn org.joda.convert.FromString
+-dontwarn org.joda.convert.ToString

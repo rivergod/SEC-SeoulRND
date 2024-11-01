@@ -39,7 +39,8 @@ public class RegisterAlarm extends BroadcastReceiver {
         AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(ALARM_TAG);
-        PendingIntent pIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+//        PendingIntent pIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        PendingIntent pIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         alarm.cancel(pIntent);
 //        alarm.setRepeating(AlarmManager.RTC_WAKEUP, setTime, NEXT_DAY, pIntent);
         alarm.setExact(AlarmManager.RTC_WAKEUP, setTime, pIntent);
@@ -52,7 +53,7 @@ public class RegisterAlarm extends BroadcastReceiver {
         AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(ALARM_TAG);
-        PendingIntent pIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        PendingIntent pIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         alarm.cancel(pIntent);
     }
 
