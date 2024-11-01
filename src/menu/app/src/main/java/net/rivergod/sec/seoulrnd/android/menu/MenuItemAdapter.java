@@ -10,8 +10,8 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.tonicartos.superslim.GridSLM;
-import com.tonicartos.superslim.LinearSLM;
+//import com.tonicartos.superslim.GridSLM;
+//import com.tonicartos.superslim.LinearSLM;
 
 import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO;
 
@@ -122,7 +122,7 @@ public class MenuItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         final GridItem gridItem = items.get(position);
         final CusineViewHolder cusineViewHolder = (CusineViewHolder) holder;
         final View itemView = holder.itemView;
-        final GridSLM.LayoutParams lp = GridSLM.LayoutParams.from(itemView.getLayoutParams());
+//        final GridSLM.LayoutParams lp = GridSLM.LayoutParams.from(itemView.getLayoutParams());
 
         if(gridItem.getViewType() == VIEW_TYPE_CONTENT) {
 
@@ -138,12 +138,12 @@ public class MenuItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             cusineViewHolder.bindText(campus);
         }
 
-        lp.setSlm(gridItem.sectionManager == LINEAR ? LinearSLM.ID : GridSLM.ID);
-        lp.setNumColumns(2);
-        lp.setFirstPosition(gridItem.sectionFirstPosition);
-        lp.setSlm(GridSLM.ID);
-
-        itemView.setLayoutParams(lp);
+//        lp.setSlm(gridItem.sectionManager == LINEAR ? LinearSLM.ID : GridSLM.ID);
+//        lp.setNumColumns(2);
+//        lp.setFirstPosition(gridItem.sectionFirstPosition);
+//        lp.setSlm(GridSLM.ID);
+//
+//        itemView.setLayoutParams(lp);
     }
 
     @Override

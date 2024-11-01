@@ -10,11 +10,16 @@ pluginManagement {
      * and the Maven Central Repository as the repositories Gradle should use to look for its
      * dependencies.
      */
-
     repositories {
-        gradlePluginPortal()
-        google()
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 dependencyResolutionManagement {
@@ -29,12 +34,12 @@ dependencyResolutionManagement {
      * Repository by default, but it does not configure any dependencies (unless
      * you select a template that requires some).
      */
-
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
     }
 }
+
 rootProject.name = "SEC-SeoulRND-menu"
-include ':app'
+include(":app")

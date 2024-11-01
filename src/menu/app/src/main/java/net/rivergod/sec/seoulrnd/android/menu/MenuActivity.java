@@ -12,12 +12,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.tonicartos.superslim.LayoutManager;
+//
+//import com.tonicartos.superslim.LayoutManager;
 
 import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO;
 import net.rivergod.sec.seoulrnd.android.menu.dto.DayCuisionsDTO;
+
+import org.joda.time.LocalDate;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,8 +28,8 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+//import java.time.LocalDate;
+//import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -131,7 +134,9 @@ public class MenuActivity extends Activity {
                         .Builder()
                         .add("meal_type", "2")
                         .add("course", "AA")
-                        .add("dt", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                        // for java.time (over android api 26)
+                        //.add("dt", LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                        .add("dt", LocalDate.now().toString("yyyyMMdd"))
                         .add("dtFlag", "1")
                         .add("hallNm", "seoulrnd")
                         .add("engYn", "N")
@@ -253,8 +258,9 @@ public class MenuActivity extends Activity {
         });
 
         RecyclerView gridMenuItems = findViewById(R.id.grid_menu_items);
-        gridMenuItems.setLayoutManager(new LayoutManager(this));
-
+//        gridMenuItems.setLayoutManager(new LayoutManager(this));
+        gridMenuItems.setLayoutManager(new LinearLayoutManager(this));
+//
         adapter = new MenuItemAdapter(this);
         gridMenuItems.setAdapter(adapter);
 

@@ -10,7 +10,8 @@
     android:textColor="#2c236d"
     android:textStyle="bold"
     android:textSize="15sp"
-    app:slm_headerDisplay="inline|sticky"
-    app:slm_isHeader="true"
     />
+<!--    app:slm_headerDisplay="inline|sticky"-->
+<!--    app:slm_isHeader="true"-->
+
 
