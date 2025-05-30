@@ -4,9 +4,14 @@
  * Android-specific build options.*/
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.gms.google-services")
+//    id("com.android.application")
+//    id("org.jetbrains.kotlin.android")
+//    id("com.google.gms.google-services")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.gms.google.services)
+
 }
 
 /**
@@ -108,16 +113,26 @@ android {
 //    }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
+        kotlinCompilerExtensionVersion = "2.0.10"
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    dependenciesInfo {
+        includeInApk = true
+        includeInBundle = true
+    }
+    buildToolsVersion = "35.0.0"
 }
 
 /**
@@ -125,21 +140,84 @@ android {
  * specifies dependencies required to build only the module itself.
  * To learn more, go to Add build dependencies.
  */
+//dependencies {
+//    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+//
+//    implementation("androidx.compose:compose-bom")
+//    androidTestImplementation("androidx.compose:compose-bom")
+//
+//    implementation("androidx.appcompat:appcompat:1.7.0")
+//
+//
+//    // Choose one of the following:
+//    // Material Design 3
+//    implementation("androidx.compose.material3:material3")
+////    // or Material Design 2
+////    implementation("androidx.compose.material:material")
+//    // or skip Material Design and build directly on top of foundational components
+//    implementation("androidx.compose.foundation:foundation")
+//    // or only import the main APIs for the underlying toolkit systems,
+//    // such as input and measurement/layout
+//    implementation("androidx.compose.ui:ui")
+//
+//    // Android Studio Preview support
+//    implementation("androidx.compose.ui:ui-tooling-preview")
+//    debugImplementation("androidx.compose.ui:ui-tooling")
+//
+//    // UI Tests
+//    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+//    debugImplementation("androidx.compose.ui:ui-test-manifest")
+//
+//    // Optional - Included automatically by material, only add when you need
+//    // the icons but not the material library (e.g. when using Material3 or a
+//    // custom design system based on Foundation)
+//    implementation("androidx.compose.material:material-icons-core")
+//    // Optional - Add full set of material icons
+//    implementation("androidx.compose.material:material-icons-extended")
+//    // Optional - Add window size utils
+//    implementation("androidx.compose.material3:material3-window-size-class")
+//
+//    // Optional - Integration with activities
+//    implementation("androidx.activity:activity-compose:1.10.1")
+//    // Optional - Integration with ViewModels
+//    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
+//    // Optional - Integration with LiveData
+//    implementation("androidx.compose.runtime:runtime-livedata")
+//    // Optional - Integration with RxJava
+//    implementation("androidx.compose.runtime:runtime-rxjava2")
+//
+//
+//
+//    implementation("com.google.firebase:firebase-analytics:22.4.0")
+//
+//    // define a BOM and its version
+//    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
+//
+//    // define any required OkHttp artifacts without version
+//    implementation("com.squareup.okhttp3:okhttp")
+//    implementation("com.squareup.okhttp3:logging-interceptor")
+//
+//    //temp
+//    implementation("androidx.recyclerview:recyclerview:1.4.0")
+//
+//    // joda-time -> remove using java.time (java.time over android 26)
+//    implementation("joda-time:joda-time:2.14.0")
+//}
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    val composeBom = platform("androidx.compose:compose-bom:2024.02.02")
-    implementation(composeBom)
-    androidTestImplementation(composeBom)
+    // Compose BOM
+    implementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(platform(libs.androidx.compose.bom))
 
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation(libs.androidx.appcompat)
 
 
     // Choose one of the following:
     // Material Design 3
     implementation("androidx.compose.material3:material3")
-//    // or Material Design 2
-//    implementation("androidx.compose.material:material")
+    //    // or Material Design 2
+    //    implementation("androidx.compose.material:material")
     // or skip Material Design and build directly on top of foundational components
     implementation("androidx.compose.foundation:foundation")
     // or only import the main APIs for the underlying toolkit systems,
@@ -164,28 +242,29 @@ dependencies {
     implementation("androidx.compose.material3:material3-window-size-class")
 
     // Optional - Integration with activities
-    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.activity:activity-compose:1.10.1")
     // Optional - Integration with ViewModels
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
     // Optional - Integration with LiveData
     implementation("androidx.compose.runtime:runtime-livedata")
     // Optional - Integration with RxJava
     implementation("androidx.compose.runtime:runtime-rxjava2")
 
+    // Optional - Add window size utils
+    implementation("androidx.compose.material3:material3-window-size-class")
 
 
-    implementation("com.google.firebase:firebase-analytics:17.4.1")
+    implementation(libs.firebase.analytics)
 
-    // define a BOM and its version
-    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
-
+    // OkHttp BOM
+    implementation(platform(libs.okhttp.bom))
     // define any required OkHttp artifacts without version
     implementation("com.squareup.okhttp3:okhttp")
     implementation("com.squareup.okhttp3:logging-interceptor")
 
     //temp
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
 
     // joda-time -> remove using java.time (java.time over android 26)
-    implementation("joda-time:joda-time:2.13.0")
+    implementation("joda-time:joda-time:2.14.0")
 }

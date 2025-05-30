@@ -52,7 +52,7 @@ fun MenuAppScreen() {
 
     // --- State Management (Simplified for now) ---
     // SharedPreferences loading would happen here or in a ViewModel
-    var selectedCampusIdState by remember { mutableStateOf(R.id.orderCampus2) } // Default, load from prefs
+    var selectedCampusIdState by remember { mutableStateOf(CampusType.TWO) } // Default, load from prefs
     var selectedAlarmIndexState by remember { mutableStateOf(-1) } // Default, load from prefs
     var customAlarmHourState by remember { mutableStateOf(-1) }
     var customAlarmMinuteState by remember { mutableStateOf(-1) }
@@ -234,6 +234,8 @@ fun MenuTopAppBar(
     )
 }
 
+enum class CampusType { ONE, TWO }
+
 enum class MealType { BREAKFAST, LUNCH, DINNER }
 
 @Composable
@@ -307,14 +309,14 @@ fun MealTab(
     }
 }
 
-// Minimal R class stub for compilation
-object R {
-    object drawable {
-        const val icon_setting = android.R.drawable.ic_menu_manage // Example placeholder
-    }
-    object id { // Used by MenuOptionsScreen for campus IDs
-        const val orderCampus1 = 1 
-        const val orderCampus2 = 2
-    }
-    // string resources would go here if needed by MenuTopAppBar directly
-}
+//// Minimal R class stub for compilation
+//object R {
+//    object drawable {
+//        const val icon_setting = android.R.drawable.ic_menu_manage // Example placeholder
+//    }
+//    object id { // Used by MenuOptionsScreen for campus IDs
+//        const val orderCampus1 = 1
+//        const val orderCampus2 = 2
+//    }
+//    // string resources would go here if needed by MenuTopAppBar directly
+//}

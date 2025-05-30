@@ -63,9 +63,9 @@ class RegisterAlarm : BroadcastReceiver() {
             // originally intended hour and minute, which should be stored in SharedPreferences.
 
             // Assuming the goal is to re-register based on an initial setting:
-            val prefs = context.getSharedPreferences(MenuActivity.ALARM_TAG, Context.MODE_PRIVATE)
-            val originalHour = prefs.getInt(MenuActivity.ALARM_TAG + MenuOptionControl.HOUR, -1)
-            val originalMinute = prefs.getInt(MenuActivity.ALARM_TAG + MenuOptionControl.MINUTE, -1)
+            val prefs = context.getSharedPreferences(RegisterAlarm.ALARM_TAG, Context.MODE_PRIVATE)
+            val originalHour = 11// prefs.getInt(RegisterAlarm.ALARM_TAG + MenuOptionControl.HOUR, -1)
+            val originalMinute = 30// prefs.getInt(RegisterAlarm.ALARM_TAG + MenuOptionControl.MINUTE, -1)
 
             if (originalHour != -1 && originalMinute != -1) {
                 register(context, originalHour, originalMinute) // Re-register with original time
@@ -111,11 +111,11 @@ class RegisterAlarm : BroadcastReceiver() {
             }
 
         } else if (action == Intent.ACTION_BOOT_COMPLETED) {
-            val prefs = context.getSharedPreferences(MenuActivity.ALARM_TAG, Context.MODE_PRIVATE)
-            val select = prefs.getInt(MenuActivity.ALARM_TAG + MenuOptionControl.SELECT, -1)
+            val prefs = context.getSharedPreferences(RegisterAlarm.ALARM_TAG, Context.MODE_PRIVATE)
+            val select = prefs.getInt(RegisterAlarm.ALARM_TAG, -1) // + MenuOptionControl.SELECT
             if (select != -1) {
-                val hour = prefs.getInt(MenuActivity.ALARM_TAG + MenuOptionControl.HOUR, -1)
-                val minute = prefs.getInt(MenuActivity.ALARM_TAG + MenuOptionControl.MINUTE, -1)
+                val hour = prefs.getInt(RegisterAlarm.ALARM_TAG, -1) // + MenuOptionControl.HOUR
+                val minute = prefs.getInt(RegisterAlarm.ALARM_TAG, -1) // + MenuOptionControl.MINUTE
                 register(context, hour, minute)
             }
         }

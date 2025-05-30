@@ -27,8 +27,6 @@
 
         <activity
             android:name="net.rivergod.sec.seoulrnd.android.menu.MenuActivity"
-            android:label="@string/title_activity_menu"
-            android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar" >
             <!--android:theme="@style/AppTheme.NoActionBar">-->
         </activity>

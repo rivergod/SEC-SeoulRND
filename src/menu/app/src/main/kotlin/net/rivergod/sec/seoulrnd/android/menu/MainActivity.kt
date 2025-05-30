@@ -95,18 +95,18 @@ fun MainAppContent() {
     }
 }
 
-// Placeholder for R.string.action_settings and R.string.app_name for compilation
-// In a real app, these would be in strings.xml
-// This object should ideally be removed if the real R class is generated and accessible.
-object R {
-    object string {
-        const val action_settings = "Settings" // Example placeholder
-        // const val app_name = "서울 R&D 식단" // Example placeholder, title is hardcoded above
-    }
-     object dimen { // Required by activity_main.xml's FAB margin, not directly by Compose code here but good to keep for context
-        val fab_margin = 16.dp
-    }
-}
+//// Placeholder for R.string.action_settings and R.string.app_name for compilation
+//// In a real app, these would be in strings.xml
+//// This object should ideally be removed if the real R class is generated and accessible.
+//object R {
+//    object string {
+//        const val action_settings = "Settings" // Example placeholder
+//        // const val app_name = "서울 R&D 식단" // Example placeholder, title is hardcoded above
+//    }
+//     object dimen { // Required by activity_main.xml's FAB margin, not directly by Compose code here but good to keep for context
+//        val fab_margin = 16.dp
+//    }
+//}
 
 // Assuming SecSeoulRnDMenuTheme is defined, for example:
 // package net.rivergod.sec.seoulrnd.android.menu.ui.theme

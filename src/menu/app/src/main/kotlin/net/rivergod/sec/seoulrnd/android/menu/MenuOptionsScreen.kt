@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -15,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -30,11 +32,11 @@ data class AlarmOption(
 
 @Composable
 fun MenuOptionsScreen(
-    selectedCampusId: Int, // e.g., R.id.orderCampus1 or R.id.orderCampus2
+    selectedCampusId: CampusType, // e.g., R.id.orderCampus1 or R.id.orderCampus2
     selectedAlarmIndex: Int, // 0-4, or -1 for none
     customAlarmHour: Int, // -1 if not set
     customAlarmMinute: Int, // -1 if not set
-    onCampusSelected: (campusId: Int) -> Unit,
+    onCampusSelected: (campusId: CampusType) -> Unit,
     onAlarmOptionSelected: (index: Int) -> Unit, // index 0-3 for preset, 4 for custom
     onCustomAlarmTimeClick: () -> Unit, // To trigger time picker/dialog
     onShowLicense: () -> Unit,
@@ -124,14 +126,14 @@ fun MenuOptionsScreen(
                     .height(20.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onCampusSelected(R.id.orderCampus1) }, contentAlignment = Alignment.Center) { // Assuming R.id values
-                    if (selectedCampusId == R.id.orderCampus1) {
+                Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onCampusSelected(CampusType.ONE) }, contentAlignment = Alignment.Center) { // Assuming R.id values
+                    if (selectedCampusId == CampusType.ONE) {
                         Image(painter = painterResource(id = R.drawable.alarm_check), contentDescription = "Selected", modifier = Modifier.size(15.dp))
                     }
                 }
                 VerticalDivider(midTextColor)
-                Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onCampusSelected(R.id.orderCampus2) }, contentAlignment = Alignment.Center) {
-                    if (selectedCampusId == R.id.orderCampus2) {
+                Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onCampusSelected(CampusType.TWO) }, contentAlignment = Alignment.Center) {
+                    if (selectedCampusId == CampusType.TWO) {
                         Image(painter = painterResource(id = R.drawable.alarm_check), contentDescription = "Selected", modifier = Modifier.size(15.dp))
                     }
                 }
@@ -227,7 +229,7 @@ private fun AlarmSettingRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(if (department.length > 10)IntrinsicSize.Min else 20.dp) // Crude way to handle R.string.option_text if it's long
+            .height(if (department.length > 10) 0.dp else 20.dp) // Crude way to handle R.string.option_text if it's long
             .clickable(enabled = !isCustom, onClick = onClick), // Row clickable only for preset alarms
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -281,19 +283,19 @@ private fun VerticalDivider(color: Color) {
     Box(modifier = Modifier.fillMaxHeight().width(1.dp).background(color))
 }
 
-// Placeholder for R.id values, actual values would be different
-object R {
-    object id {
-        const val orderCampus1 = 1001
-        const val orderCampus2 = 1002
-    }
-    object drawable {
-        const val menu_position = android.R.drawable.ic_menu_mapmode // Placeholder
-        const val alarm_check = android.R.drawable.checkbox_on_background // Placeholder
-    }
-    object string {
-        // These would be actual string resources
-        const val option_text = "기타 연구소 등등등" // Example of a potentially long string
-        const val menu_license = "라이센스 정보"
-    }
-}
+//// Placeholder for R.id values, actual values would be different
+//object R {
+//    object id {
+//        const val orderCampus1 = 1001
+//        const val orderCampus2 = 1002
+//    }
+//    object drawable {
+//        const val menu_position = android.R.drawable.ic_menu_mapmode // Placeholder
+//        const val alarm_check = android.R.drawable.checkbox_on_background // Placeholder
+//    }
+//    object string {
+//        // These would be actual string resources
+//        const val option_text = "기타 연구소 등등등" // Example of a potentially long string
+//        const val menu_license = "라이센스 정보"
+//    }
+//}

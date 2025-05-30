@@ -142,16 +142,16 @@ private fun loadLicenseText(context: Context): String {
         "Error loading license."
     }
 }
-
-// Helper R class stub if not available in current context (e.g. pure Kotlin module for preview)
-// In a real Android app, this R class would be generated.
-object R {
-    object raw {
-        const val txt_license = 0 // Replace with actual resource ID if testing in isolation
-    }
-    object drawable {
-        // These would be actual drawable resources
-        // const val round_rect_white_box = 0 
-        // const val round_rect_line = 0
-    }
-}
+//
+//// Helper R class stub if not available in current context (e.g. pure Kotlin module for preview)
+//// In a real Android app, this R class would be generated.
+//object R {
+//    object raw {
+//        const val txt_license = 0 // Replace with actual resource ID if testing in isolation
+//    }
+//    object drawable {
+//        // These would be actual drawable resources
+//        // const val round_rect_white_box = 0
+//        // const val round_rect_line = 0
+//    }
+//}
