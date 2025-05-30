@@ -10,17 +10,14 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.NoTitleBar"
-        android:name="MenuApplication">
+        android:name="net.rivergod.sec.seoulrnd.android.menu.MenuApplication">
         <!--android:theme="@style/AppTheme" >-->
 
         <activity
-            android:name=".MenuActivity"
+            android:name="net.rivergod.sec.seoulrnd.android.menu.MainActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:exported="true" >
-            <!--android:theme="@style/AppTheme.NoActionBar">-->
-
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,7 +25,15 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".RegisterAlarm" android:exported="true">
+        <activity
+            android:name="net.rivergod.sec.seoulrnd.android.menu.MenuActivity"
+            android:label="@string/title_activity_menu"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.NoTitleBar" >
+            <!--android:theme="@style/AppTheme.NoActionBar">-->
+        </activity>
+
+        <receiver android:name="net.rivergod.sec.seoulrnd.android.menu.RegisterAlarm" android:exported="true">
             <intent-filter>
                 <action android:name="net.rivergod.sec.seoulrnd.android.menu.alarm"/>
             </intent-filter>
