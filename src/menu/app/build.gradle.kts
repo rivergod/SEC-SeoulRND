@@ -32,7 +32,7 @@ android {
         applicationId = "net.rivergod.sec.seoulrnd.android.menu"
         // 0.9.14 와 같은 최소 사양을 유지함. java.time 은 desugaring 으로 제공 (아래 compileOptions)
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 916
         versionName = "0.9.16"
 
