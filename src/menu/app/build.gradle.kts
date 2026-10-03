@@ -49,7 +49,7 @@ android {
      * dynamically from the build system. You can configure product flavors to override
      * these values for different versions of your app.*/
     defaultConfig {
-        // Uniquely identifies the package for publishing.
+        // Uniquely identifies the package for publishing.x
         applicationId = "net.rivergod.sec.seoulrnd.android.menu"
 
         // Defines the minimum API level required to run the app.
@@ -59,10 +59,10 @@ android {
         targetSdk = 35
 
         // Defines the version number of your app.
-        versionCode = 15
+        versionCode = 915
 
         // Defines a user-friendly version name for your app.
-        versionName = "0.9.14"
+        versionName = "0.9.15"
     }
 
     lint {
@@ -125,6 +125,8 @@ android {
         }
     }
     compileOptions {
+        // java.time (LocalDate) on minSdk 24
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -245,6 +247,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.10.1")
     // Optional - Integration with ViewModels
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.0")
     // Optional - Integration with LiveData
     implementation("androidx.compose.runtime:runtime-livedata")
     // Optional - Integration with RxJava
@@ -262,9 +265,10 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp")
     implementation("com.squareup.okhttp3:logging-interceptor")
 
-    //temp
-    implementation("androidx.recyclerview:recyclerview:1.4.0")
+    // java.time for minSdk < 26 (replaces joda-time)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
-    // joda-time -> remove using java.time (java.time over android 26)
-    implementation("joda-time:joda-time:2.14.0")
+    testImplementation(libs.junit)
+    // android.jar 의 org.json 은 unit test 에서 stub 이므로 실제 구현을 사용
+    testImplementation("org.json:json:20240303")
 }

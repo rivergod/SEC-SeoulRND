@@ -4,16 +4,18 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
-// Set of Material typography styles to start with
+// Text() 의 기본 스타일(bodyLarge). 화면마다 글자 크기를 직접 지정하므로
+// 0.9.14 의 TextView 처럼 줄 간격은 글자 크기를 따르고 자간은 두지 않는다.
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        lineHeight = TextUnit.Unspecified,
+        letterSpacing = 0.sp
     )
     /* Other default text styles to override
 titleLarge = TextStyle(

@@ -1,322 +1,392 @@
 package net.rivergod.sec.seoulrnd.android.menu
 
-import android.annotation.SuppressLint
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
-import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO // Assuming this DTO is available
-import java.text.SimpleDateFormat
-import java.util.*
-
-// Assuming R class stubs are available or will be linked in the project for drawables and strings
-// object R { object drawable { const val icon_setting = android.R.drawable.ic_menu_manage } }
-// object R { object string { const val menu_sub_title = "Seoul R&D Campus"; const val menu_title = "Today's Menu" } }
-// object R { object id { const val orderCampus1 = 1; const val orderCampus2 = 2; } } // For MenuOptionsScreen
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import net.rivergod.sec.seoulrnd.android.menu.dto.MealType
+import net.rivergod.sec.seoulrnd.android.menu.ui.theme.HeaderBlue
+import net.rivergod.sec.seoulrnd.android.menu.ui.theme.HeaderSubText
+import net.rivergod.sec.seoulrnd.android.menu.ui.theme.SecSeoulRnDMenuTheme
+import net.rivergod.sec.seoulrnd.android.menu.ui.theme.TabBarBackground
+import net.rivergod.sec.seoulrnd.android.menu.ui.theme.TabText
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 
 class MenuActivity : ComponentActivity() {
+
+    private val viewModel: MenuViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            MenuAppScreen()
+            SecSeoulRnDMenuTheme {
+                MenuRoute(viewModel)
+            }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshIfDateChanged()
     }
 }
 
-@SuppressLint("SimpleDateFormat")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MenuAppScreen() {
+private fun MenuRoute(viewModel: MenuViewModel) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
 
-    // --- State Management (Simplified for now) ---
-    // SharedPreferences loading would happen here or in a ViewModel
-    var selectedCampusIdState by remember { mutableStateOf(CampusType.TWO) } // Default, load from prefs
-    var selectedAlarmIndexState by remember { mutableStateOf(-1) } // Default, load from prefs
-    var customAlarmHourState by remember { mutableStateOf(-1) }
-    var customAlarmMinuteState by remember { mutableStateOf(-1) }
-
-    // Menu data state
-    val menuItemsList = remember { mutableStateListOf<Any>() } // Will hold CuisineDTO or Header strings
-    var currentMealType by remember { mutableStateOf(MealType.LUNCH) } // Default to Lunch
-
-    // Dialog states
-    var showLicenseDialog by remember { mutableStateOf(false) }
-    // var showDeveloperInfoDialog by remember { mutableStateOf(false) } // If using CustomPopup for this
-    var showCustomTimeDialog by remember { mutableStateOf(false) }
-
-
-    // --- Data Fetching (Placeholder) ---
-    LaunchedEffect(key1 = currentMealType, key2 = selectedCampusIdState) {
-        // TODO: Implement actual data fetching logic based on currentMealType and selectedCampusIdState
-        // e.g., call a suspend function that fetches and parses menu data
-        // For now, populate with dummy data or clear
-        menuItemsList.clear()
-        // menuItemsList.addAll(fetchMenuData(currentMealType, selectedCampusIdState))
+    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (!granted) {
+            Toast.makeText(context, "알림 권한이 없어 식사 시간 알림을 표시할 수 없습니다.", Toast.LENGTH_LONG).show()
+        }
     }
 
-    // --- UI ---
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet { // Material 3 recommendation
-                MenuOptionsScreen(
-                    selectedCampusId = selectedCampusIdState,
-                    selectedAlarmIndex = selectedAlarmIndexState,
-                    customAlarmHour = customAlarmHourState,
-                    customAlarmMinute = customAlarmMinuteState,
-                    onCampusSelected = { campusId ->
-                        selectedCampusIdState = campusId
-                        // TODO: Save to SharedPreferences
-                        // TODO: Trigger menu data refresh
-                        scope.launch { drawerState.close() }
-                    },
-                    onAlarmOptionSelected = { index ->
-                        selectedAlarmIndexState = index
-                        // TODO: Save to SharedPreferences & update alarm via RegisterAlarm
-                        if (index == 4 && (customAlarmHourState == -1 || customAlarmMinuteState == -1)) {
-                           showCustomTimeDialog = true // Open time picker if custom is selected and no time set
-                        }
-                         scope.launch { drawerState.close() }
-                    },
-                    onCustomAlarmTimeClick = {
-                        showCustomTimeDialog = true
-                        // Actual time picking dialog will provide data back via another callback
-                        // scope.launch { drawerState.close() } // Keep drawer open for time picker
-                    },
-                    onShowLicense = {
-                        showLicenseDialog = true
-                        scope.launch { drawerState.close() }
-                    },
-                    onShowDeveloperInfo = {
-                        // TODO: showDeveloperInfoDialog = true (if using CustomPopup)
-                        // Or navigate to a different composable/screen
-                        scope.launch { drawerState.close() }
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is MenuEvent.Toast -> Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                MenuEvent.RequestNotificationPermission -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
-                )
-            }
-        }
-    ) {
-        Scaffold(
-            topBar = {
-                MenuTopAppBar(
-                    onNavigationIconClick = { scope.launch { drawerState.open() } },
-                    onSyncClick = {
-                        // TODO: Trigger menu data refresh for current meal type and campus
-                    }
-                )
-            },
-            bottomBar = {
-                BottomMenuBar(
-                    selectedMealType = currentMealType,
-                    onMealTypeSelected = { mealType -> currentMealType = mealType },
-                    onSettingsClick = { scope.launch { drawerState.open() } }
-                )
-            }
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues) // Apply padding from Scaffold
-            ) {
-                // TODO: CampusMenuBar Composable (from previous step)
-                // CampusMenuBar(campuses = listOf("Campus 1", "Campus 2"), selectedCampus = "Campus 1", onCampusSelected = {})
-
-                // TODO: LazyColumn for menu items
-                if (menuItemsList.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Loading menu or no items...")
-                    }
-                } else {
-                    // LazyColumn { items(menuItemsList) { item -> /* MenuRowItem or MenuHeaderItem */ } }
                 }
             }
         }
     }
 
-    if (showLicenseDialog) {
-        LicenseDialogComposable(showDialog = true, onDismissRequest = { showLicenseDialog = false })
+    BackHandler(enabled = state.isOptionMenuOpen) { viewModel.closeOptionMenu() }
+
+    MenuScreen(
+        state = state,
+        onMealSelected = viewModel::selectMeal,
+        onSettingsClick = viewModel::toggleOptionMenu,
+        onCloseOptions = viewModel::closeOptionMenu,
+        onRetry = viewModel::retry,
+        optionsContent = {
+            MenuOptionsScreen(
+                firstCampus = state.firstCampus,
+                selectedAlarm = state.selectedAlarm,
+                customAlarmTime = state.customAlarmTime,
+                onCampusSelected = viewModel::selectFirstCampus,
+                onAlarmOptionSelected = viewModel::onAlarmOptionClick,
+                onCustomAlarmTimeClick = viewModel::showTimeDialog,
+                onShowLicense = { viewModel.showLicense(true) },
+            )
+        },
+    )
+
+    if (state.showTimeDialog) {
+        AlarmTimeSetPopup(
+            initialTime = state.customAlarmTime,
+            onSetTime = viewModel::onCustomTimeEntered,
+            onCancel = viewModel::dismissTimeDialog,
+        )
     }
-    
-    if (showCustomTimeDialog) {
-        // Placeholder for custom time picker dialog
-        // This would typically be a more complex dialog or a new screen
-        AlertDialog(
-            onDismissRequest = { showCustomTimeDialog = false },
-            title = { Text("Set Custom Alarm Time") },
-            text = { Text("Time picker would be shown here.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    // In a real scenario, you'd get time from picker
-                    // customAlarmHourState = ... 
-                    // customAlarmMinuteState = ...
-                    // TODO: Save to SharedPreferences & update alarm via RegisterAlarm
-                    selectedAlarmIndexState = 4 // Ensure custom is marked as selected
-                    showCustomTimeDialog = false
-                }) { Text("OK") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showCustomTimeDialog = false }) { Text("Cancel") }
+
+    if (state.showLicenseDialog) {
+        LicenseDialog(onDismissRequest = { viewModel.showLicense(false) })
+    }
+}
+
+@Composable
+fun MenuScreen(
+    state: MenuUiState,
+    onMealSelected: (MealType) -> Unit,
+    onSettingsClick: () -> Unit,
+    onCloseOptions: () -> Unit,
+    onRetry: () -> Unit,
+    optionsContent: @Composable () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        Spacer(
+            Modifier
+                .fillMaxWidth()
+                .background(HeaderBlue)
+                .windowInsetsTopHeight(WindowInsets.statusBars)
+        )
+
+        // 0.9.14 와 같이 폭 360dp 의 화면을 가운데에 둔다.
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .widthIn(max = 360.dp)
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally)
+        ) {
+            MenuHeader(date = state.date, isSampleData = state.isSampleData)
+
+            Box(modifier = Modifier.weight(1f)) {
+                when (val load = state.loadState) {
+                    MenuLoadState.Loading -> MenuMessage("Menu data loading....") {
+                        CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+                    }
+
+                    is MenuLoadState.Error -> MenuMessage(load.message) {
+                        Button(onClick = onRetry, modifier = Modifier.padding(top = 16.dp)) { Text("다시 시도") }
+                    }
+
+                    is MenuLoadState.Loaded -> {
+                        val sections = state.sections
+                        if (sections.isEmpty()) {
+                            MenuMessage("등록된 메뉴가 없습니다.")
+                        } else {
+                            // 끼니나 캠퍼스 순서가 바뀌면 맨 위부터 보여준다.
+                            // (key 없이 두면 LazyGrid 가 이전 항목 위치를 따라가 스크롤이 유지된다)
+                            key(state.selectedMeal, state.firstCampus) {
+                                MenuGrid(sections)
+                            }
+                        }
+                    }
+                }
+
+                OptionPanel(visible = state.isOptionMenuOpen, onClose = onCloseOptions, content = optionsContent)
             }
+
+            BottomMenuBar(
+                selectedMealType = state.selectedMeal,
+                onMealTypeSelected = onMealSelected,
+                onSettingsClick = onSettingsClick,
+            )
+        }
+
+        Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+    }
+}
+
+@Composable
+private fun MenuHeader(date: LocalDate, isSampleData: Boolean) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .background(HeaderBlue)
+    ) {
+        Text(
+            text = stringResource(R.string.menu_sub_title),
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(5.dp),
+            color = HeaderSubText,
+            fontSize = 11.sp
+        )
+        Text(
+            text = stringResource(R.string.menu_title),
+            modifier = Modifier.align(Alignment.Center),
+            color = Color.Black,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+        if (isSampleData) {
+            Text(
+                text = "예시 데이터",
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(5.dp),
+                color = HeaderSubText,
+                fontSize = 10.sp
+            )
+        }
+        Text(
+            text = formatHeaderDate(date),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(5.dp),
+            color = HeaderSubText,
+            fontSize = 12.sp
         )
     }
 }
 
-@SuppressLint("SimpleDateFormat")
-@OptIn(ExperimentalMaterial3Api::class)
+/** "10월 3일 (토)" */
+private fun formatHeaderDate(date: LocalDate): String =
+    "${date.monthValue}월 ${date.dayOfMonth}일 (${date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)})"
+
+/** 오른쪽에서 밀려 들어오는 설정 패널. 왼쪽 빈 영역을 누르면 닫힌다. (0.9.14 common_menu_close) */
 @Composable
-fun MenuTopAppBar(
-    onNavigationIconClick: () -> Unit,
-    onSyncClick: () -> Unit
-) {
-    val calendar = Calendar.getInstance()
-    val month = calendar.get(Calendar.MONTH) + 1
-    val day = calendar.get(Calendar.DAY_OF_MONTH)
-    val dayOfWeekStr = SimpleDateFormat("E", Locale.getDefault()).format(calendar.time)
-    val dateText = "${month}월 ${day}일 (${dayOfWeekStr})"
-
-    TopAppBar(
-        title = {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { // Fill and center title
-                 Column(horizontalAlignment = Alignment.CenterHorizontally){
-                    Text(
-                        text = "Today's Menu", // stringResource(id = R.string.menu_title),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black //Color(0xFF000000)
+private fun OptionPanel(visible: Boolean, onClose: () -> Unit, content: @Composable () -> Unit) {
+    AnimatedVisibility(visible = visible, enter = fadeIn(), exit = fadeOut()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0x33000000))
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClose
+                )
+        )
+    }
+    Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.End) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInHorizontally { it },
+            exit = slideOutHorizontally { it },
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(300.dp)
+                    .fillMaxHeight()
+                    // 패널 안쪽 터치가 뒤의 닫기 영역으로 전달되지 않도록 막는다.
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {}
                     )
-                    Text(
-                        text = "Seoul R&D Campus", // stringResource(id = R.string.menu_sub_title),
-                        fontSize = 11.sp,
-                        color = Color(0xFF0073A3) // Color(0xFF0073A3)
-                    )
-                }
+            ) {
+                content()
             }
-        },
-        navigationIcon = {
-            IconButton(onClick = onNavigationIconClick) {
-                Icon(Icons.Filled.Menu, contentDescription = "Open Menu")
-            }
-        },
-        actions = {
-            Text(
-                text = dateText,
-                fontSize = 12.sp,
-                color = Color(0xFF0073A3), //Color(0xFF0073A3)
-                modifier = Modifier.align(Alignment.CenterVertically).padding(end = 8.dp)
-            )
-            IconButton(onClick = onSyncClick) {
-                Icon(Icons.Filled.Refresh, contentDescription = "Refresh Menu")
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFA6E5FF)) // #a6e5ff
-    )
+        }
+    }
 }
-
-enum class CampusType { ONE, TWO }
-
-enum class MealType { BREAKFAST, LUNCH, DINNER }
 
 @Composable
 fun BottomMenuBar(
     selectedMealType: MealType,
     onMealTypeSelected: (MealType) -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        HorizontalDivider(color = Color(0xFFA6E5FF), thickness = 1.dp) // #a6e5ff
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(HeaderBlue)
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(40.dp)
-                .background(Color(0x99D9DADC)), // #99d9dadc (semi-transparent gray)
+                .background(TabBarBackground),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            MealTab(
-                text = "Breakfast",
-                isSelected = selectedMealType == MealType.BREAKFAST,
-                onClick = { onMealTypeSelected(MealType.BREAKFAST) },
-                modifier = Modifier.weight(1f)
-            )
-            VerticalDivider(color = Color(0xFFA6E5FF), thickness = 1.dp) // #a6e5ff
-            MealTab(
-                text = "Lunch",
-                isSelected = selectedMealType == MealType.LUNCH,
-                onClick = { onMealTypeSelected(MealType.LUNCH) },
-                modifier = Modifier.weight(1f)
-            )
-            VerticalDivider(color = Color(0xFFA6E5FF), thickness = 1.dp)
-            MealTab(
-                text = "Dinner",
-                isSelected = selectedMealType == MealType.DINNER,
-                onClick = { onMealTypeSelected(MealType.DINNER) },
-                modifier = Modifier.weight(1f)
-            )
-            VerticalDivider(color = Color(0xFFA6E5FF), thickness = 1.dp)
-
-            Image(
-                painter = painterResource(id = R.drawable.icon_setting), // Replace with actual resource
-                contentDescription = "Settings",
+            listOf(
+                MealType.BREAKFAST to "Breakfast",
+                MealType.LUNCH to "Lunch",
+                MealType.DINNER to "Dinner",
+            ).forEach { (mealType, label) ->
+                MealTab(
+                    text = label,
+                    isSelected = selectedMealType == mealType,
+                    onClick = { onMealTypeSelected(mealType) },
+                    modifier = Modifier.weight(1f)
+                )
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .width(1.dp)
+                        .background(HeaderBlue)
+                )
+            }
+            Box(
                 modifier = Modifier
-                    .size(40.dp) // container size
-                    .padding(5.dp) // icon padding
-                    .clickable(onClick = onSettingsClick)
-            )
+                    .width(57.dp)
+                    .fillMaxHeight()
+                    .clickable(onClick = onSettingsClick),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.icon_setting),
+                    contentDescription = "설정",
+                    modifier = Modifier.size(30.dp)
+                )
+            }
         }
     }
 }
 
 @Composable
-fun MealTab(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun MealTab(text: String, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxHeight()
-            .background(if (isSelected) Color(0xFFA6E5FF) else Color.Transparent) // #a6e5ff
+            .background(if (isSelected) HeaderBlue else Color.Transparent)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            color = if (isSelected) Color.White else Color(0xFF022A65), // #022a65
+            color = if (isSelected) Color.White else TabText,
             fontWeight = FontWeight.Bold
         )
     }
 }
 
-//// Minimal R class stub for compilation
-//object R {
-//    object drawable {
-//        const val icon_setting = android.R.drawable.ic_menu_manage // Example placeholder
-//    }
-//    object id { // Used by MenuOptionsScreen for campus IDs
-//        const val orderCampus1 = 1
-//        const val orderCampus2 = 2
-//    }
-//    // string resources would go here if needed by MenuTopAppBar directly
-//}
+@Preview(widthDp = 360, heightDp = 640)
+@Composable
+private fun MenuScreenPreview() {
+    SecSeoulRnDMenuTheme {
+        MenuScreen(
+            state = MenuUiState(date = LocalDate.of(2024, 11, 1), loadState = MenuLoadState.Loading, isSampleData = true),
+            onMealSelected = {},
+            onSettingsClick = {},
+            onCloseOptions = {},
+            onRetry = {},
+            optionsContent = {},
+        )
+    }
+}

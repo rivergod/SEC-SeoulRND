@@ -2,26 +2,60 @@ package net.rivergod.sec.seoulrnd.android.menu
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.rivergod.sec.seoulrnd.android.menu.dto.Campus
 import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO
+import net.rivergod.sec.seoulrnd.android.menu.dto.MealType
+import net.rivergod.sec.seoulrnd.android.menu.ui.theme.MenuCalorieText
+import net.rivergod.sec.seoulrnd.android.menu.ui.theme.MenuNameText
+import net.rivergod.sec.seoulrnd.android.menu.ui.theme.MenuSideText
+import net.rivergod.sec.seoulrnd.android.menu.ui.theme.SectionHeaderBackground
 
-// Assuming R.drawable.item_bg is a color or simple drawable.
-// For simplicity, using a light gray background as a placeholder.
-// In a real app, this would be Modifier.background(painterResource(id = R.drawable.item_bg))
-// or a more complex drawing.
-val itemBgModifier = Modifier.background(Color(0xFFF0F0F0)) // Placeholder for @drawable/item_bg
+/**
+ * 캠퍼스 헤더 + 2열 메뉴 카드 목록.
+ * item_bg 이미지(600x355)와 menu_item.xml 의 높이 배분이 2열 카드 기준으로 그려져 있어 2열로 배치한다.
+ */
+@Composable
+fun MenuGrid(sections: List<MenuSection>, modifier: Modifier = Modifier) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 1.dp),
+    ) {
+        sections.forEach { section ->
+            item(key = "header-${section.campus}", span = { GridItemSpan(maxLineSpan) }) {
+                MenuHeaderItem(section.campus.label)
+            }
+            items(section.items, key = { it.id }) { cuisine ->
+                MenuItemCard(cuisine)
+            }
+        }
+    }
+}
 
 @Composable
 fun MenuHeaderItem(campusName: String) {
@@ -29,113 +63,137 @@ fun MenuHeaderItem(campusName: String) {
         text = campusName,
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0x77a6e5ff)) // #77a6e5ff
+            .background(SectionHeaderBackground)
             .padding(10.dp),
-        color = Color(0xFF2c236d), // #2c236d
+        color = MenuNameText,
         fontWeight = FontWeight.Bold,
         fontSize = 15.sp
     )
 }
 
 @Composable
-fun MenuRowItem(cuisine: CuisineDTO) {
-    Column(
-        modifier = Modifier
+fun MenuItemCard(cuisine: CuisineDTO, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .padding(5.dp)
             .fillMaxWidth()
-            .height(100.dp) // as per menu_item.xml
-            .padding(5.dp) // margin in XML
-            .then(itemBgModifier), // Applying placeholder background
-        horizontalAlignment = Alignment.CenterHorizontally
+            .height(100.dp)
     ) {
-        // Icon: cuisine.cafeteriaCode is assumed to be a drawable resource ID
-        // If it's 0 or invalid, painterResource might throw an error.
-        // The original adapter directly uses it in setBackgroundResource.
-        // For Jetpack Compose Image, it should be a valid drawable.
-        // MenuItemIconResource.getMenuIcon(cuisine.cafeteriaUrl) might be safer if cafeteriaCode is not a drawable.
-        // For now, sticking to the adapter's direct use of cuisine.getCafeteriaCode().
-        val iconResId = cuisine.cafeteriaCode ?: R.drawable.dishes // Fallback to a default icon
-        if (iconResId != 0) { // Check for a potentially valid resource ID
-            Image(
-                painter = painterResource(id = iconResId),
-                contentDescription = cuisine.title ?: "Menu icon",
+        // item_bg: 위 흰색(아이콘) / 가운데 회색(메뉴명, 곁들임) / 아래 주황색(칼로리) 3단
+        Image(
+            painter = painterResource(R.drawable.item_bg),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.matchParentSize()
+        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(
                 modifier = Modifier
-                    .width(80.dp)
-                    .height(20.dp)
-                    .padding(top = 2.dp),
-                contentScale = ContentScale.Fit // Or other appropriate scale
+                    .padding(top = 2.dp)
+                    .size(width = 80.dp, height = 20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (cuisine.iconRes != 0) {
+                    Image(
+                        painter = painterResource(cuisine.iconRes),
+                        contentDescription = cuisine.courseName,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Text(
+                        text = cuisine.courseName,
+                        color = MenuNameText,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            val title = cuisine.displayTitle
+            Box(
+                modifier = Modifier
+                    .padding(top = 4.dp, start = 5.dp, end = 5.dp)
+                    .fillMaxWidth()
+                    .height(23.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = title,
+                    color = MenuNameText,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = if (title.length > 13) 10.sp else 13.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Text(
+                text = cuisine.sideDishes.joinToString(", "),
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .fillMaxWidth()
+                    .height(27.dp),
+                color = MenuSideText,
+                fontSize = 7.5.sp,
+                lineHeight = 9.sp,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
             )
-        } else {
-            // Placeholder if no valid icon resource ID is found
-            Spacer(modifier = Modifier.height(20.dp).padding(top = 2.dp))
+
+            Text(
+                text = cuisine.displayCalorie,
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .fillMaxWidth(),
+                color = MenuCalorieText,
+                fontSize = 11.sp,
+                textAlign = TextAlign.Center,
+                maxLines = 1
+            )
         }
-
-
-        val title = cuisine.title?.let {
-            if (it.contains("l)")) it.substring(0, it.indexOf("(")) else it
-        } ?: ""
-
-        Text(
-            text = title,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(23.dp)
-                .padding(top = 4.dp, start = 5.dp, end = 5.dp),
-            textAlign = TextAlign.Center,
-            color = Color(0xFF2c236d), // #2c236d
-            fontWeight = FontWeight.Bold,
-            fontSize = if (title.length > 13) 10.sp else 13.sp
-        )
-
-        val content = cuisine.content ?: ""
-        val lastIndexComma = content.lastIndexOf(",")
-        val sideText = if (lastIndexComma != -1) content.substring(0, lastIndexComma) else ""
-
-        Text(
-            text = sideText,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(27.dp)
-                .padding(start = 10.dp, end = 10.dp),
-            color = Color(0xFF303030), // #303030
-            fontSize = 7.5.sp // This is a very small font size, ensure it's intended
-        )
-
-        Text(
-            text = cuisine.calorie ?: "",
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f) // Takes remaining space in height
-                .padding(top = 4.dp),
-            textAlign = TextAlign.Center,
-            color = Color.Red, // #FF0000
-            fontSize = 11.sp
-        )
     }
 }
 
-// Stub R class for R.drawable.dishes - this would be in the actual project's R file.
-// object R {
-//    object drawable {
-//        const val dishes = 0 // Replace with a real drawable resource ID if testing in isolation
-//        // const val item_bg = 0 // Placeholder for actual item_bg drawable
-//    }
-// }
-// CuisineDTO would be imported from its definition
-// package net.rivergod.sec.seoulrnd.android.menu.dto
-// data class CuisineDTO(
-//     var mealCode: Int?,
-//     var campusCode: Int?,
-//     var cafeteriaCode: Int?, // This is used as Icon Resource ID
-//     var cafeteriaUrl: String?,
-//     var title: String?,
-//     var content: String?,
-//     var calorie: String?
-// ) {
-//     companion object {
-//         const val MEALCODE_BREAKFAST = 0
-//         const val MEALCODE_LAUNCH = 1
-//         const val MEALCODE_DINNER = 2
-//         const val CAMPUSCODE_1 = 0
-//         const val CAMPUSCODE_2 = 1
-//     }
-// }
+@Composable
+fun MenuMessage(message: String, modifier: Modifier = Modifier, content: @Composable () -> Unit = {}) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = message, color = MenuSideText, fontSize = 13.sp, textAlign = TextAlign.Center)
+        content()
+    }
+}
+
+@Preview(widthDp = 360)
+@Composable
+private fun MenuGridPreview() {
+    fun cuisine(id: String, course: String, title: String, campus: Campus) = CuisineDTO(
+        id = id,
+        mealType = MealType.LUNCH,
+        campus = campus,
+        courseName = course,
+        iconRes = MenuItemIconResource.getMenuIcon(course),
+        title = title,
+        sideDishes = listOf("쌀밥", "계란찜", "콩나물무침", "깍두기"),
+        calorie = "760",
+    )
+    MenuGrid(
+        sections = listOf(
+            MenuSection(
+                Campus.CAMPUS_2,
+                listOf(
+                    cuisine("1", "도담찌개", "돼지김치찌개", Campus.CAMPUS_2),
+                    cuisine("2", "가츠엔", "등심돈까스(950kcal)", Campus.CAMPUS_2),
+                    cuisine("3", "알 수 없는 코너", "토마토 미트볼 파스타와 마늘빵 세트", Campus.CAMPUS_2),
+                )
+            ),
+            MenuSection(Campus.CAMPUS_1, listOf(cuisine("4", "봄이온소반", "오징어볶음", Campus.CAMPUS_1))),
+        )
+    )
+}
