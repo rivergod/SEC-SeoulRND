@@ -29,9 +29,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Refresh
@@ -308,6 +310,7 @@ private fun MenuTopBar(
     onToday: () -> Unit,
     onSettingsClick: () -> Unit,
 ) {
+    // 상단은 본문과 같은 바탕색으로 두고, 브랜드 색은 강조(선택 탭·오늘 표시)에만 쓴다
     TopAppBar(
         title = {
             Column {
@@ -316,26 +319,23 @@ private fun MenuTopBar(
                     Text(
                         "예시 데이터",
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
         },
         actions = {
             if (showTodayButton) {
-                TextButton(
-                    onClick = onToday,
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
-                ) { Text("오늘", fontWeight = FontWeight.Bold) }
+                TextButton(onClick = onToday) { Text("오늘", fontWeight = FontWeight.Bold) }
             }
             IconButton(onClick = onSettingsClick) {
                 Icon(Icons.Filled.Settings, contentDescription = "설정")
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
     )
 }
@@ -346,15 +346,17 @@ private fun MealTabs(selected: MealType, onSelected: (MealType) -> Unit) {
     val meals = listOf(MealType.BREAKFAST to "조식", MealType.LUNCH to "중식", MealType.DINNER to "석식")
     PrimaryTabRow(
         selectedTabIndex = meals.indexOfFirst { it.first == selected },
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.primary,
+        divider = { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) },
     ) {
         meals.forEach { (meal, label) ->
             Tab(
                 selected = meal == selected,
                 onClick = { onSelected(meal) },
-                text = { Text(label, fontWeight = if (meal == selected) FontWeight.Bold else FontWeight.Normal) },
-                unselectedContentColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                text = { Text(label, fontWeight = if (meal == selected) FontWeight.Bold else FontWeight.Medium) },
+                selectedContentColor = MaterialTheme.colorScheme.primary,
+                unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -370,51 +372,55 @@ private fun DateBar(
     onPrevious: () -> Unit,
     onNext: () -> Unit,
 ) {
-    val contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-    Row(
+    val contentColor = MaterialTheme.colorScheme.onSurface
+    val disabledColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
+    // 바탕과 같은 색의 상단 안에서 날짜 이동은 옅은 회색 캡슐 하나로 묶어 보이게 한다
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .padding(horizontal = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(start = 16.dp, end = 16.dp, bottom = 4.dp)
     ) {
-        IconButton(onClick = onPrevious, enabled = canGoPrevious) {
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                contentDescription = "이전 날",
-                tint = if (canGoPrevious) contentColor else contentColor.copy(alpha = 0.3f)
-            )
-        }
         Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                formatHeaderDate(date),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = contentColor,
-            )
-            Spacer(Modifier.width(8.dp))
-            Surface(
-                shape = MaterialTheme.shapes.small,
-                color = if (dayOffset == 0L) MaterialTheme.colorScheme.primary else contentColor.copy(alpha = 0.12f),
-                contentColor = if (dayOffset == 0L) MaterialTheme.colorScheme.onPrimary else contentColor,
-            ) {
-                Text(
-                    relativeDayLabel(dayOffset),
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                    style = MaterialTheme.typography.labelMedium,
+            IconButton(onClick = onPrevious, enabled = canGoPrevious) {
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    contentDescription = "이전 날",
+                    tint = if (canGoPrevious) contentColor else disabledColor
                 )
             }
-        }
-        IconButton(onClick = onNext, enabled = canGoNext) {
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "다음 날",
-                tint = if (canGoNext) contentColor else contentColor.copy(alpha = 0.3f)
-            )
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    formatHeaderDate(date),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = contentColor,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    relativeDayLabel(dayOffset),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (dayOffset == 0L) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            IconButton(onClick = onNext, enabled = canGoNext) {
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = "다음 날",
+                    tint = if (canGoNext) contentColor else disabledColor
+                )
+            }
         }
     }
 }
