@@ -5,23 +5,29 @@ import androidx.annotation.DrawableRes
 enum class MealType { BREAKFAST, LUNCH, DINNER }
 
 /**
- * 메뉴 묶음. 0.9.14 는 1/2캠퍼스로 나눴지만, 현재 웰스토리 메뉴(welmenu.welstory.com)는
- * Cafeteria 2 한 곳의 식당 코너와 Take Out 만 제공한다.
+ * 식당. 0.9.14 의 1/2캠퍼스 구분에 해당하며 식당마다 운영사와 메뉴 API 가 다르다.
+ * - 1식당: 풀무원 (puls2.pulmuone.com)
+ * - 2식당: 삼성웰스토리 (welmenu.welstory.com)
  */
-enum class MenuArea(val label: String) {
-    DINE_IN("식당 (Cafeteria 2)"),
-    TAKE_OUT("Take Out"),
+enum class Cafeteria(val label: String, val shortLabel: String) {
+    CAFETERIA_1("1식당 (Cafeteria 1)", "1식당"),
+    CAFETERIA_2("2식당 (Cafeteria 2)", "2식당"),
 }
+
+/** 식당 안의 묶음. 두 식당 모두 식당 코너와 Take Out(T/O) 코너가 있다. */
+enum class MenuArea { DINE_IN, TAKE_OUT }
 
 /**
  * 한 코스(식당 코너)의 대표 메뉴.
  *
- * @param courseName 코너 이름 (응답의 course_txt). 아이콘이 없을 때 대신 표시한다.
+ * @param courseName 코너 이름. 아이콘이 없을 때 대신 표시한다.
  * @param iconRes 코너 아이콘 drawable, 매칭되는 아이콘이 없으면 0.
- * @param sideDishes 같은 코스에 속한 곁들임 메뉴들 (typical_menu != "Y").
+ * @param sideDishes 같은 코스에 속한 곁들임 메뉴들.
+ * @param calorie 코스 전체 칼로리 ("725", "1346.44" 처럼 숫자 문자열).
  */
 data class CuisineDTO(
     val id: String,
+    val cafeteria: Cafeteria,
     val mealType: MealType,
     val area: MenuArea,
     val courseName: String,
@@ -38,7 +44,7 @@ data class CuisineDTO(
             title
         }
 
-    /** tot_kcal 은 "725", "1346.44" 처럼 오며, 0 이면(T/O 상시메뉴 등) 표시하지 않는다. */
+    /** 소수는 반올림하고, 0 이면(T/O 상시메뉴 등) 표시하지 않는다. */
     val displayCalorie: String
         get() {
             val kcal = calorie.toDoubleOrNull() ?: return calorie

@@ -1,20 +1,19 @@
 package net.rivergod.sec.seoulrnd.android.menu.data
 
 import net.rivergod.sec.seoulrnd.android.menu.MenuItemIconResource
+import net.rivergod.sec.seoulrnd.android.menu.dto.Cafeteria
 import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO
-import net.rivergod.sec.seoulrnd.android.menu.dto.DayCuisionsDTO
 import net.rivergod.sec.seoulrnd.android.menu.dto.MealType
 import net.rivergod.sec.seoulrnd.android.menu.dto.MenuArea
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.json.JSONTokener
-import java.time.LocalDate
 
 class MenuParseException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 /**
- * getSeoulRndMenuList.do 응답(JSON 배열) 파서. 0.9.14 의 MenuActivity.getMenu() 파싱 로직과 동일한 규칙을 따른다.
+ * 2식당(웰스토리) getSeoulRndMenuList.do 응답(JSON 배열) 파서. 0.9.14 의 MenuActivity.getMenu() 파싱 로직과 동일한 규칙을 따른다.
  *
  * 항목 예 (2026-10-02 실제 응답 일부):
  * ```
@@ -35,7 +34,7 @@ object WelstoryMenuParser {
      */
     val TAKE_OUT_HALL_NOS = setOf("E5J4")
 
-    fun parse(json: String, date: LocalDate): DayCuisionsDTO {
+    fun parse(json: String): List<CuisineDTO> {
         val root = try {
             JSONTokener(json).nextValue()
         } catch (e: JSONException) {
@@ -59,7 +58,8 @@ object WelstoryMenuParser {
             if (row.text("typical_menu") == "Y") {
                 val courseName = row.text("course_txt")
                 mains[id] = CuisineDTO(
-                    id = id,
+                    id = "W$id",
+                    cafeteria = Cafeteria.CAFETERIA_2,
                     mealType = when (mealCode) {
                         "3" -> MealType.DINNER
                         "2" -> MealType.LUNCH
@@ -82,8 +82,7 @@ object WelstoryMenuParser {
         }
 
         // 대표 메뉴가 없는 코스의 곁들임 메뉴는 0.9.14 와 마찬가지로 버린다.
-        val cuisines = mains.values.map { it.copy(sideDishes = sides[it.id].orEmpty()) }
-        return DayCuisionsDTO(date, cuisines)
+        return mains.map { (id, main) -> main.copy(sideDishes = sides[id].orEmpty()) }
     }
 
     /** 문자열·숫자 값을 문자열로 읽는다. 응답의 null 은 optString 이 "null" 로 돌려주므로 빈 문자열로 바꾼다. */

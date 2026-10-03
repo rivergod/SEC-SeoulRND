@@ -1,5 +1,7 @@
 package net.rivergod.sec.seoulrnd.android.menu.data
 
+import net.rivergod.sec.seoulrnd.android.menu.dto.Cafeteria
+import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDate
@@ -7,57 +9,156 @@ import java.time.LocalDate
 /**
  * 예시 식단 데이터 (빌드 설정 seoulrnd.menuSource=sample). 네트워크 없이 화면을 개발·확인할 때 쓴다.
  *
- * 응답 형식은 실제 getSeoulRndMenuList.do 응답과 같고(필드 일부만 채움), 메뉴는 날짜에 따라 돌아가며 바뀐다.
- * 실제 서버와 달리 주말에도 메뉴를 돌려준다.
+ * 식당마다 실제 API 와 같은 응답 형식(필드 일부만 채움)으로 만들어 실제 파서를 거친다.
+ * 메뉴는 날짜에 따라 돌아가며 바뀌고, 실제 서버와 달리 주말에도 메뉴를 돌려준다.
  */
-class SampleMenuDataSource : MenuDataSource {
+class SampleMenuDataSource(override val cafeteria: Cafeteria) : MenuDataSource {
 
     override val isSample = true
 
-    override suspend fun fetch(date: LocalDate): String = buildJson(date).toString()
+    override suspend fun fetch(date: LocalDate): List<CuisineDTO> = when (cafeteria) {
+        Cafeteria.CAFETERIA_1 -> PulmuoneMenuParser.parse(pulmuoneJson(date))
+        Cafeteria.CAFETERIA_2 -> WelstoryMenuParser.parse(welstoryJson(date))
+    }
 
-    fun buildJson(date: LocalDate): JSONArray {
-        val day = date.toEpochDay()
+    /** todayMealPlan_sql.php 형식: 17칸 배열 행, 주메뉴(Y) 다음에 주메뉴와 같은 이름을 포함한 구성 메뉴(N) */
+    fun pulmuoneJson(date: LocalDate): String {
         val rows = JSONArray()
-        COURSES.forEachIndexed { index, course ->
-            val dish = course.dishes[Math.floorMod(day + index, course.dishes.size.toLong()).toInt()]
-            rows.put(course.row(typical = true, name = dish.main, kcal = dish.kcal))
-            dish.sides.forEach { rows.put(course.row(typical = false, name = it, kcal = "")) }
+        forEachDish(PULMUONE_COURSES, date) { course, dish ->
+            fun row(name: String, totKcal: String, mainYn: String) = JSONArray(
+                listOf(
+                    MenuHttp.yyyyMMdd(date), null, null, null, "", course.mealType, "", "", course.courseType,
+                    course.courseTxt, "", name, "", "", null, totKcal, mainYn,
+                )
+            )
+            rows.put(row(dish.main, dish.kcal, "Y"))
+            rows.put(row(dish.main, "0", "N"))
+            dish.sides.forEach { rows.put(row(it, "0", "N")) }
         }
-        return rows
+        return JSONObject().put("mealData", JSONObject().put("mealData", rows)).toString()
+    }
+
+    /** getSeoulRndMenuList.do 형식: 대표 메뉴(typical_menu=Y) 다음에 곁들임 메뉴 */
+    fun welstoryJson(date: LocalDate): String {
+        val rows = JSONArray()
+        forEachDish(WELSTORY_COURSES, date) { course, dish ->
+            fun row(typical: Boolean, name: String, kcal: String) = JSONObject()
+                .put("menu_meal_type", course.mealType)
+                .put("menu_course_type", course.courseType)
+                .put("hall_no", course.hallNo)
+                .put("course_txt", course.courseTxt)
+                .put("typical_menu", if (typical) "Y" else "N")
+                .put("menu_name", name)
+                .put("tot_kcal", kcal)
+            rows.put(row(typical = true, name = dish.main, kcal = dish.kcal))
+            dish.sides.forEach { rows.put(row(typical = false, name = it, kcal = "")) }
+        }
+        return rows.toString()
+    }
+
+    private fun forEachDish(courses: List<Course>, date: LocalDate, block: (Course, Dish) -> Unit) {
+        val day = date.toEpochDay()
+        courses.forEachIndexed { index, course ->
+            block(course, course.dishes[Math.floorMod(day + index, course.dishes.size.toLong()).toInt()])
+        }
     }
 
     private class Dish(val main: String, val kcal: String, val sides: List<String>)
 
+    /** @param hallNo 웰스토리만 사용 */
     private class Course(
         val mealType: String,
         val courseType: String,
         val hallNo: String,
         val courseTxt: String,
         val dishes: List<Dish>,
-    ) {
-        fun row(typical: Boolean, name: String, kcal: String) = JSONObject()
-            .put("menu_meal_type", mealType)
-            .put("menu_course_type", courseType)
-            .put("hall_no", hallNo)
-            .put("course_txt", courseTxt)
-            .put("typical_menu", if (typical) "Y" else "N")
-            .put("menu_name", name)
-            .put("tot_kcal", kcal)
-    }
+    )
 
-    private companion object {
-        const val BREAKFAST = "1"
-        const val LUNCH = "2"
-        const val DINNER = "3"
+    companion object {
+        fun all(): List<MenuDataSource> = Cafeteria.entries.map { SampleMenuDataSource(it) }
 
-        // 실제 응답의 hall_no: E5J2, E5J3 식당 코너 / E5J4 Take Out
-        const val HALL_DINE_IN = "E5J2"
-        val HALL_TAKE_OUT = WelstoryMenuParser.TAKE_OUT_HALL_NOS.first()
+        private const val BREAKFAST = "1"
+        private const val LUNCH = "2"
+        private const val DINNER = "3"
 
-        fun dish(main: String, kcal: Int, vararg sides: String) = Dish(main, kcal.toString(), sides.toList())
+        // 웰스토리 실제 응답의 hall_no: E5J2, E5J3 식당 코너 / E5J4 Take Out
+        private const val HALL_DINE_IN = "E5J2"
+        private val HALL_TAKE_OUT = WelstoryMenuParser.TAKE_OUT_HALL_NOS.first()
 
-        val COURSES = listOf(
+        private fun dish(main: String, kcal: Int, vararg sides: String) = Dish(main, kcal.toString(), sides.toList())
+
+        /** 1식당(풀무원). 코너 구성은 2026-10-02 실제 메뉴판 기준. 끼니 코드 001 조식 / 002 중식 / 003 석식 */
+        private val PULMUONE_COURSES = listOf(
+            Course(
+                "001", "029", "", "죽or수프＆찜채소", listOf(
+                    dish("소고기미역죽", 394, "찜채소(쥬키니)"),
+                    dish("양송이크림수프", 420, "찜채소(단호박)", "모닝빵"),
+                )
+            ),
+            Course(
+                "001", "014", "", "T/O 샌드위치", listOf(
+                    dish("에그마요샌드위치", 520, "우유"),
+                    dish("햄치즈샌드위치", 480, "두유"),
+                )
+            ),
+            Course(
+                "002", "001", "", "ASIAN", listOf(
+                    dish("들깨칼국수", 1097, "미니열무비빔밥", "수제녹두빈대떡", "해초무침"),
+                    dish("소고기쌀국수", 880, "짜조", "숙주무침"),
+                )
+            ),
+            Course(
+                "002", "003", "", "쉐피스트", listOf(
+                    dish("제육돈까스", 1229, "쌀밥", "쑥갓어묵국", "산더미샐러드＆드레싱"),
+                    dish("치즈함박스테이크", 1150, "버터라이스", "콘스프", "코울슬로"),
+                )
+            ),
+            Course(
+                "002", "004", "", "보글보글", listOf(
+                    dish("모듬순대전골", 1286, "수제비사리"),
+                    dish("부대찌개", 1180, "라면사리", "쌀밥"),
+                )
+            ),
+            Course(
+                "002", "005", "", "88℃온도", listOf(
+                    dish("미나리닭곰탕", 1063, "잡곡밥", "떡새우완자전", "오이양파무침"),
+                    dish("뼈해장국", 990, "쌀밥", "깍두기", "부추무침"),
+                )
+            ),
+            Course(
+                "002", "007", "", "풀스바", listOf(
+                    dish("[페스코]구운연어영양밥", 567, "뿌리채소조림", "두부면파프리카볶음", "채소믹스샐러드"),
+                    dish("[비건]두부스테이크덮밥", 540, "구운채소", "그린샐러드"),
+                )
+            ),
+            Course(
+                "002", "008", "", "찬장", listOf(
+                    dish("뚝배기순두부찌개", 1351, "잡곡밥", "돼지고기모듬장조림", "멸치볶음", "숙주들깨나물"),
+                    dish("된장찌개", 1120, "쌀밥", "고등어구이", "시금치나물"),
+                )
+            ),
+            Course(
+                "002", "018", "", "T/O 밀박스", listOf(
+                    dish("불고기도시락", 820, "미니샐러드"),
+                    dish("치킨마요덮밥", 860, "미소장국"),
+                )
+            ),
+            Course(
+                "003", "020", "", "T/O 치킨", listOf(
+                    dish("후라이드치킨", 1100, "치킨무", "콜라"),
+                    dish("양념치킨", 1180, "치킨무", "사이다"),
+                )
+            ),
+            Course(
+                "003", "036", "", "찜채소", listOf(
+                    dish("찜채소(쥬키니)", 205, "초간장"),
+                    dish("찜채소(양배추)", 180, "쌈장"),
+                )
+            ),
+        )
+
+        /** 2식당(웰스토리) */
+        private val WELSTORY_COURSES = listOf(
             // ---- 조식 ----
             Course(
                 BREAKFAST, "AA", HALL_DINE_IN, "봄이온소반", listOf(

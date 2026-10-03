@@ -12,8 +12,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.rivergod.sec.seoulrnd.android.menu.data.MenuLoadException
 import net.rivergod.sec.seoulrnd.android.menu.data.MenuParseException
 import net.rivergod.sec.seoulrnd.android.menu.data.MenuRepository
+import net.rivergod.sec.seoulrnd.android.menu.dto.Cafeteria
 import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO
 import net.rivergod.sec.seoulrnd.android.menu.dto.DayCuisionsDTO
 import net.rivergod.sec.seoulrnd.android.menu.dto.MealType
@@ -28,28 +30,51 @@ sealed interface MenuLoadState {
     data class Error(val message: String) : MenuLoadState
 }
 
-data class MenuSection(val area: MenuArea, val items: List<CuisineDTO>)
+/**
+ * 목록의 한 묶음 (식당 x 식당 코너/Take Out).
+ * @param failed 이 식당의 메뉴를 불러오지 못함 (items 는 비어 있음)
+ */
+data class MenuSection(
+    val cafeteria: Cafeteria,
+    val area: MenuArea,
+    val items: List<CuisineDTO>,
+    val failed: Boolean = false,
+) {
+    val title: String
+        get() = if (area == MenuArea.TAKE_OUT) "${cafeteria.shortLabel} Take Out" else cafeteria.label
+}
 
 data class MenuUiState(
     val date: LocalDate,
     val loadState: MenuLoadState = MenuLoadState.Loading,
     val isSampleData: Boolean = false,
     val selectedMeal: MealType = mealTypeFor(LocalTime.now()),
-    val firstArea: MenuArea = MenuArea.DINE_IN,
+    val firstCafeteria: Cafeteria = Cafeteria.CAFETERIA_2,
     val selectedAlarm: AlarmOption? = null,
     val customAlarmTime: AlarmTime? = null,
     val isOptionMenuOpen: Boolean = false,
     val showTimeDialog: Boolean = false,
     val showLicenseDialog: Boolean = false,
 ) {
-    /** 선택된 끼니의 메뉴를 식당/Take Out 으로 묶는다. '보여지는 순서' 설정의 묶음이 먼저 온다. */
+    /**
+     * 선택된 끼니의 메뉴를 식당별로 묶는다. '보여지는 순서' 설정의 식당이 먼저 오고,
+     * 식당 안에서는 식당 코너 다음에 Take Out 이 온다.
+     */
     val sections: List<MenuSection>
         get() {
             val day = (loadState as? MenuLoadState.Loaded)?.day ?: return emptyList()
-            val areaOrder = listOf(firstArea) + MenuArea.entries.filter { it != firstArea }
+            val cafeteriaOrder = listOf(firstCafeteria) + Cafeteria.entries.filter { it != firstCafeteria }
             val items = day.forMeal(selectedMeal)
-            return areaOrder.mapNotNull { area ->
-                items.filter { it.area == area }.takeIf { it.isNotEmpty() }?.let { MenuSection(area, it) }
+            return cafeteriaOrder.flatMap { cafeteria ->
+                if (cafeteria in day.failedCafeterias) {
+                    listOf(MenuSection(cafeteria, MenuArea.DINE_IN, emptyList(), failed = true))
+                } else {
+                    MenuArea.entries.mapNotNull { area ->
+                        items.filter { it.cafeteria == cafeteria && it.area == area }
+                            .takeIf { it.isNotEmpty() }
+                            ?.let { MenuSection(cafeteria, area, it) }
+                    }
+                }
             }
         }
 }
@@ -75,7 +100,7 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
         MenuUiState(
             date = LocalDate.now(),
             isSampleData = repository.isSample,
-            firstArea = prefs.firstArea,
+            firstCafeteria = prefs.firstCafeteria,
             selectedAlarm = prefs.selectedAlarm,
             customAlarmTime = prefs.customAlarmTime,
         )
@@ -109,9 +134,13 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
                 MenuLoadState.Loaded(repository.load(date))
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: MenuParseException) {
-                Log.e(TAG, "menu parse failed", e)
-                MenuLoadState.Error("식단 정보를 해석할 수 없습니다.")
+            } catch (e: MenuLoadException) {
+                // 두 식당 모두 실패한 경우. 원인별 로그는 MenuRepository 가 남긴다.
+                if (e.cause is MenuParseException) {
+                    MenuLoadState.Error("식단 정보를 해석할 수 없습니다.")
+                } else {
+                    MenuLoadState.Error(NETWORK_ERROR_MESSAGE).also { _events.trySend(MenuEvent.Toast(NETWORK_ERROR_MESSAGE)) }
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "menu load failed", e)
                 MenuLoadState.Error(NETWORK_ERROR_MESSAGE).also { _events.trySend(MenuEvent.Toast(NETWORK_ERROR_MESSAGE)) }
@@ -126,9 +155,9 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
 
     fun closeOptionMenu() = _uiState.update { it.copy(isOptionMenuOpen = false) }
 
-    fun selectFirstArea(area: MenuArea) {
-        prefs.firstArea = area
-        _uiState.update { it.copy(firstArea = area) }
+    fun selectFirstCafeteria(cafeteria: Cafeteria) {
+        prefs.firstCafeteria = cafeteria
+        _uiState.update { it.copy(firstCafeteria = cafeteria) }
     }
 
     fun onAlarmOptionClick(option: AlarmOption) {

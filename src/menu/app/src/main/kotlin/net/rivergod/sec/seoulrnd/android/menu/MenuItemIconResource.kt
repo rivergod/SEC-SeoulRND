@@ -3,10 +3,10 @@ package net.rivergod.sec.seoulrnd.android.menu
 import androidx.annotation.DrawableRes
 
 /**
- * 코스 이름(course_txt) -> 코너 아이콘.
+ * 2식당(웰스토리) 코스 이름(course_txt) -> 코너 로고 아이콘. 1식당(풀무원) 코너에는 쓰지 않는다.
  *
  * 0.9.14 는 course_txt 로 아이콘을 찾은 뒤 바로 0 으로 덮어써서 아이콘이 표시되지 않았다.
- * 실제 course_txt 값을 더 이상 확인할 수 없으므로, 식당 안내도(menu_position)에 있는
+ * 코너 이름이 조금씩 바뀌므로("헬스기빙365", "T/O 샐러드" 등) 식당 안내도(menu_position)의
  * 코너 이름을 기준으로 키워드 매칭한다.
  */
 object MenuItemIconResource {

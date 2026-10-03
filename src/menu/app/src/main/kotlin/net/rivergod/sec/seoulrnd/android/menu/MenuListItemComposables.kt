@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.rivergod.sec.seoulrnd.android.menu.dto.Cafeteria
 import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO
 import net.rivergod.sec.seoulrnd.android.menu.dto.MealType
 import net.rivergod.sec.seoulrnd.android.menu.dto.MenuArea
@@ -40,15 +42,28 @@ import net.rivergod.sec.seoulrnd.android.menu.ui.theme.SectionHeaderBackground
  * item_bg 이미지(600x355)와 menu_item.xml 의 높이 배분이 2열 카드 기준으로 그려져 있어 2열로 배치한다.
  */
 @Composable
-fun MenuGrid(sections: List<MenuSection>, modifier: Modifier = Modifier) {
+fun MenuGrid(sections: List<MenuSection>, onRetry: () -> Unit, modifier: Modifier = Modifier) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 1.dp),
     ) {
         sections.forEach { section ->
-            item(key = "header-${section.area}", span = { GridItemSpan(maxLineSpan) }) {
-                MenuHeaderItem(section.area.label)
+            item(key = "header-${section.cafeteria}-${section.area}", span = { GridItemSpan(maxLineSpan) }) {
+                MenuHeaderItem(section.title)
+            }
+            if (section.failed) {
+                item(key = "failed-${section.cafeteria}", span = { GridItemSpan(maxLineSpan) }) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("메뉴를 불러오지 못했습니다.", color = MenuSideText, fontSize = 13.sp)
+                        TextButton(onClick = onRetry) { Text("다시 시도") }
+                    }
+                }
             }
             items(section.items, key = { it.id }) { cuisine ->
                 MenuItemCard(cuisine)
@@ -175,6 +190,7 @@ fun MenuMessage(message: String, modifier: Modifier = Modifier, content: @Compos
 private fun MenuGridPreview() {
     fun cuisine(id: String, course: String, title: String, area: MenuArea, kcal: String = "760") = CuisineDTO(
         id = id,
+        cafeteria = Cafeteria.CAFETERIA_2,
         mealType = MealType.LUNCH,
         area = area,
         courseName = course,
@@ -186,6 +202,7 @@ private fun MenuGridPreview() {
     MenuGrid(
         sections = listOf(
             MenuSection(
+                Cafeteria.CAFETERIA_2,
                 MenuArea.DINE_IN,
                 listOf(
                     cuisine("1", "도담찌개", "[맛집다녀왔습니다] 이북식닭개장", MenuArea.DINE_IN),
@@ -193,7 +210,13 @@ private fun MenuGridPreview() {
                     cuisine("3", "가든세이지", "홍합토마토파스타", MenuArea.DINE_IN),
                 )
             ),
-            MenuSection(MenuArea.TAKE_OUT, listOf(cuisine("4", "T/O 김밥/말이", "김밥[2~3Coin]", MenuArea.TAKE_OUT, "1346.44"))),
-        )
+            MenuSection(
+                Cafeteria.CAFETERIA_2,
+                MenuArea.TAKE_OUT,
+                listOf(cuisine("4", "T/O 김밥/말이", "김밥[2~3Coin]", MenuArea.TAKE_OUT, "1346.44"))
+            ),
+            MenuSection(Cafeteria.CAFETERIA_1, MenuArea.DINE_IN, emptyList(), failed = true),
+        ),
+        onRetry = {},
     )
 }

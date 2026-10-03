@@ -125,10 +125,10 @@ private fun MenuRoute(viewModel: MenuViewModel) {
         onRetry = viewModel::retry,
         optionsContent = {
             MenuOptionsScreen(
-                firstArea = state.firstArea,
+                firstCafeteria = state.firstCafeteria,
                 selectedAlarm = state.selectedAlarm,
                 customAlarmTime = state.customAlarmTime,
-                onAreaSelected = viewModel::selectFirstArea,
+                onCafeteriaSelected = viewModel::selectFirstCafeteria,
                 onAlarmOptionSelected = viewModel::onAlarmOptionClick,
                 onCustomAlarmTimeClick = viewModel::showTimeDialog,
                 onShowLicense = { viewModel.showLicense(true) },
@@ -192,16 +192,16 @@ fun MenuScreen(
 
                     is MenuLoadState.Loaded -> {
                         val sections = state.sections
-                        if (load.day.cuisines.isEmpty()) {
-                            // 웰스토리 서버는 주말·공휴일에 빈 목록을 준다
+                        if (load.day.cuisines.isEmpty() && load.day.failedCafeterias.isEmpty()) {
+                            // 두 식당 서버 모두 주말·공휴일에는 빈 목록을 준다
                             MenuMessage("오늘은 식단 정보가 없습니다.\n(주말·공휴일)")
                         } else if (sections.isEmpty()) {
                             MenuMessage("등록된 메뉴가 없습니다.")
                         } else {
                             // 끼니나 보여지는 순서가 바뀌면 맨 위부터 보여준다.
                             // (key 없이 두면 LazyGrid 가 이전 항목 위치를 따라가 스크롤이 유지된다)
-                            key(state.selectedMeal, state.firstArea) {
-                                MenuGrid(sections)
+                            key(state.selectedMeal, state.firstCafeteria) {
+                                MenuGrid(sections, onRetry = onRetry)
                             }
                         }
                     }
