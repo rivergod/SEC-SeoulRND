@@ -1,191 +1,111 @@
-/**
- * The first line in the build configuration applies the Android Gradle plugin
- * to this build and makes the android block available to specify
- * Android-specific build options.*/
+import java.util.Properties
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.gms.google-services")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
 }
 
-/**
- * Locate (and possibly download) a JDK used to build your kotlin
- * source code. This also acts as a default for sourceCompatibility,
- * targetCompatibility and jvmTarget. Note that this does not affect which JDK
- * is used to run the Gradle build itself, and does not need to take into
- * account the JDK version required by Gradle plugins (such as the
- * Android Gradle Plugin)
- */
-kotlin {
-    jvmToolchain(17)
+// 빌드 설정 일부를 저장소에 커밋되지 않는 local.properties 에서 읽음.
+// 우선순위: 명령줄 `-P<이름>=…` > local.properties > 기본값.
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
 }
+fun buildSetting(name: String): String? = providers.gradleProperty(name).orNull ?: localProps.getProperty(name)
 
+// 식단 데이터 출처 — remote(웰스토리 메뉴 API, 기본값) | sample(네트워크 없이 쓰는 예시 데이터).
+val menuSource: String = buildSetting("seoulrnd.menuSource") ?: "remote"
+require(menuSource in setOf("sample", "remote")) { "seoulrnd.menuSource 는 sample 또는 remote 여야 함: $menuSource" }
 
-/**
- * The android block is where you configure all your Android-specific
- * build options.*/
+// release 서명 값은 local.properties(또는 -P)의 signing.* 에서 읽음. 소스에 경로·암호를 적지 않음.
+// 설정이 없으면 release 는 서명되지 않은 채로 빌드됨.
+val releaseStoreFile: String? = buildSetting("signing.storeFile")
+
 android {
-    /**
-     * The app's namespace. Used primarily to access app resources.*/
-
     namespace = "net.rivergod.sec.seoulrnd.android.menu"
+    compileSdk {
+        version = release(37)
+    }
 
-    /**
-     * compileSdk specifies the Android API level Gradle should use to
-     * compile your app. This means your app can use the API features included in
-     * this API level and lower.*/
-
-    compileSdk = 35
-
-    /**
-     * The defaultConfig block encapsulates default settings and entries for all
-     * build variants and can override some attributes in main/AndroidManifest.xml
-     * dynamically from the build system. You can configure product flavors to override
-     * these values for different versions of your app.*/
     defaultConfig {
-        // Uniquely identifies the package for publishing.
         applicationId = "net.rivergod.sec.seoulrnd.android.menu"
-
-        // Defines the minimum API level required to run the app.
+        // 0.9.14 와 같은 최소 사양을 유지함. java.time 은 desugaring 으로 제공 (아래 compileOptions)
         minSdk = 24
-
-        // Specifies the API level used to test the app.
         targetSdk = 35
+        versionCode = 915
+        versionName = "0.9.15"
 
-        // Defines the version number of your app.
-        versionCode = 15
+        buildConfigField("boolean", "MENU_REMOTE", "${menuSource == "remote"}")
+    }
 
-        // Defines a user-friendly version name for your app.
-        versionName = "0.9.14"
+    signingConfigs {
+        // 저장소에 포함된 공용 디버그 키 — 개발 PC 가 달라도 debug 빌드를 덮어 설치할 수 있게 함
+        getByName("debug") {
+            storeFile = rootProject.file("keystores/debug.keystore")
+        }
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = rootProject.file(releaseStoreFile)
+                storePassword = buildSetting("signing.storePassword")
+                keyAlias = buildSetting("signing.keyAlias")
+                keyPassword = buildSetting("signing.keyPassword")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            optimization {
+                enable = true
+            }
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (releaseStoreFile != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+        compose = true
+    }
+
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     lint {
         abortOnError = false
     }
 
-    signingConfigs {
-        getByName("debug") {
-            storeFile = file("../keystores/debug.keystore")
-        }
-        create("release") {
-            storeFile = file(System.getProperty("sec-seoulrnd.keystore.file", "release.keystore"))
-            storePassword = System.getProperty("sec-seoulrnd.keystore.password", "******")
-            keyAlias = System.getProperty("sec-seoulrnd.key.alias", "era")
-            keyPassword = System.getProperty("sec-seoulrnd.key.password", "******")
-        }
-    }
-
-    /**
-     * The buildTypes block is where you can configure multiple build types.
-     * By default, the build system defines two build types: debug and release. The
-     * debug build type is not explicitly shown in the default build configuration,
-     * but it includes debugging tools and is signed with the debug key. The release
-     * build type applies ProGuard settings and is not signed by default.*/
-    buildTypes {
-        /**
-         * By default, Android Studio configures the release build type to enable code
-         * shrinking, using minifyEnabled, and specifies the default ProGuard rules file.*/
-        getByName("release") {
-            isMinifyEnabled = true // Enables code shrinking for the release build type.
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-//            proguardFiles = getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-
-            signingConfig = signingConfigs.getByName("release")
-        }
-    }
-
-    /**
-     * To override source and target compatibility (if different from the
-     * toolchain JDK version), add the following. All of these
-     * default to the same value as kotlin.jvmToolchain. If you're using the
-     * same version for these values and kotlin.jvmToolchain, you can
-     * remove these blocks.
-     */
-//    compileOptions {
-//        sourceCompatibility JavaVersion.VERSION_1_8
-//                targetCompatibility JavaVersion.VERSION_1_8
-//    }
-    buildFeatures {
-        compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
+    testOptions {
+        // JVM 단위 테스트에서 android.util.Log 등 android.jar stub 호출이 예외 대신 기본값을 돌려주게 함
+        unitTests.isReturnDefaultValues = true
     }
 }
 
-/**
- * The dependencies block in the module-level build configuration file
- * specifies dependencies required to build only the module itself.
- * To learn more, go to Add build dependencies.
- */
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    debugImplementation(libs.androidx.compose.ui.tooling)
 
-    val composeBom = platform("androidx.compose:compose-bom:2024.02.02")
-    implementation(composeBom)
-    androidTestImplementation(composeBom)
+    // 웰스토리 메뉴 API 호출 (seoulrnd.menuSource=remote)
+    implementation(libs.okhttp)
+    implementation(libs.firebase.analytics)
 
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
-
-    // Choose one of the following:
-    // Material Design 3
-    implementation("androidx.compose.material3:material3")
-//    // or Material Design 2
-//    implementation("androidx.compose.material:material")
-    // or skip Material Design and build directly on top of foundational components
-    implementation("androidx.compose.foundation:foundation")
-    // or only import the main APIs for the underlying toolkit systems,
-    // such as input and measurement/layout
-    implementation("androidx.compose.ui:ui")
-
-    // Android Studio Preview support
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-
-    // UI Tests
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
-
-    // Optional - Included automatically by material, only add when you need
-    // the icons but not the material library (e.g. when using Material3 or a
-    // custom design system based on Foundation)
-    implementation("androidx.compose.material:material-icons-core")
-    // Optional - Add full set of material icons
-    implementation("androidx.compose.material:material-icons-extended")
-    // Optional - Add window size utils
-    implementation("androidx.compose.material3:material3-window-size-class")
-
-    // Optional - Integration with activities
-    implementation("androidx.activity:activity-compose:1.8.2")
-    // Optional - Integration with ViewModels
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
-    // Optional - Integration with LiveData
-    implementation("androidx.compose.runtime:runtime-livedata")
-    // Optional - Integration with RxJava
-    implementation("androidx.compose.runtime:runtime-rxjava2")
-
-
-
-    implementation("com.google.firebase:firebase-analytics:17.4.1")
-
-    // define a BOM and its version
-    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
-
-    // define any required OkHttp artifacts without version
-    implementation("com.squareup.okhttp3:okhttp")
-    implementation("com.squareup.okhttp3:logging-interceptor")
-
-    //temp
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
-
-    // joda-time -> remove using java.time (java.time over android 26)
-    implementation("joda-time:joda-time:2.13.0")
+    testImplementation(libs.junit)
+    testImplementation(libs.org.json)
 }
