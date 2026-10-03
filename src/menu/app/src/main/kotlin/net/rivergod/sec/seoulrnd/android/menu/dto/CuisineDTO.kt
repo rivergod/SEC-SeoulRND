@@ -4,9 +4,13 @@ import androidx.annotation.DrawableRes
 
 enum class MealType { BREAKFAST, LUNCH, DINNER }
 
-enum class Campus(val label: String) {
-    CAMPUS_1("1캠퍼스 (A,B,C Tower)"),
-    CAMPUS_2("2캠퍼스 (D,E,F Tower)"),
+/**
+ * 메뉴 묶음. 0.9.14 는 1/2캠퍼스로 나눴지만, 현재 웰스토리 메뉴(welmenu.welstory.com)는
+ * Cafeteria 2 한 곳의 식당 코너와 Take Out 만 제공한다.
+ */
+enum class MenuArea(val label: String) {
+    DINE_IN("식당 (Cafeteria 2)"),
+    TAKE_OUT("Take Out"),
 }
 
 /**
@@ -19,7 +23,7 @@ enum class Campus(val label: String) {
 data class CuisineDTO(
     val id: String,
     val mealType: MealType,
-    val campus: Campus,
+    val area: MenuArea,
     val courseName: String,
     @param:DrawableRes val iconRes: Int,
     val title: String,
@@ -34,6 +38,10 @@ data class CuisineDTO(
             title
         }
 
+    /** tot_kcal 은 "725", "1346.44" 처럼 오며, 0 이면(T/O 상시메뉴 등) 표시하지 않는다. */
     val displayCalorie: String
-        get() = if (calorie.isNotEmpty() && calorie.all { it.isDigit() }) "$calorie kcal" else calorie
+        get() {
+            val kcal = calorie.toDoubleOrNull() ?: return calorie
+            return if (kcal > 0) "${Math.round(kcal)} kcal" else ""
+        }
 }

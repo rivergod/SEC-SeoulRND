@@ -2,7 +2,7 @@ package net.rivergod.sec.seoulrnd.android.menu
 
 import android.content.Context
 import androidx.core.content.edit
-import net.rivergod.sec.seoulrnd.android.menu.dto.Campus
+import net.rivergod.sec.seoulrnd.android.menu.dto.MenuArea
 
 /** 식사 시작 알람 선택지. 0.9.14 의 option_menu.xml 과 같은 순서/인덱스. */
 enum class AlarmOption(val index: Int, val department: String, val hour: Int, val minute: Int) {
@@ -43,10 +43,10 @@ class MenuPreferences(context: Context) {
 
     private val prefs = context.applicationContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 
-    /** 목록에서 먼저 보여줄 캠퍼스. 0.9.14 기본값은 2캠퍼스. */
-    var firstCampus: Campus
-        get() = if (prefs.getInt(KEY_FIRST_CAMPUS, 2) == 1) Campus.CAMPUS_1 else Campus.CAMPUS_2
-        set(value) = prefs.edit { putInt(KEY_FIRST_CAMPUS, if (value == Campus.CAMPUS_1) 1 else 2) }
+    /** 목록에서 먼저 보여줄 묶음 ('보여지는 순서'). 기본값은 식당. */
+    var firstArea: MenuArea
+        get() = MenuArea.entries.firstOrNull { it.name == prefs.getString(KEY_FIRST_AREA, null) } ?: MenuArea.DINE_IN
+        set(value) = prefs.edit { putString(KEY_FIRST_AREA, value.name) }
 
     var selectedAlarm: AlarmOption?
         get() = AlarmOption.fromIndex(prefs.getInt(KEY_ALARM_SELECT, -1))
@@ -77,7 +77,7 @@ class MenuPreferences(context: Context) {
 
     private companion object {
         const val PREF_NAME = "Alarm"
-        const val KEY_FIRST_CAMPUS = "Campus_first"
+        const val KEY_FIRST_AREA = "Area_first"
         const val KEY_ALARM_SELECT = "Alarm_select"
         const val KEY_ALARM_HOUR = "Alarm_hour"
         const val KEY_ALARM_MINUTE = "Alarm_minute"

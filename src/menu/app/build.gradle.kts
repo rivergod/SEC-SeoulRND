@@ -14,8 +14,8 @@ val localProps = Properties().apply {
 }
 fun buildSetting(name: String): String? = providers.gradleProperty(name).orNull ?: localProps.getProperty(name)
 
-// 식단 데이터 출처 — sample(추정 데이터, 기본값) | remote(0.9.14 웰스토리 API, 현재 동작하지 않음).
-val menuSource: String = buildSetting("seoulrnd.menuSource") ?: "sample"
+// 식단 데이터 출처 — remote(웰스토리 메뉴 API, 기본값) | sample(네트워크 없이 쓰는 예시 데이터).
+val menuSource: String = buildSetting("seoulrnd.menuSource") ?: "remote"
 require(menuSource in setOf("sample", "remote")) { "seoulrnd.menuSource 는 sample 또는 remote 여야 함: $menuSource" }
 
 // release 서명 값은 local.properties(또는 -P)의 signing.* 에서 읽음. 소스에 경로·암호를 적지 않음.
@@ -94,7 +94,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
-    // 0.9.14 웰스토리 API 호출 (seoulrnd.menuSource=remote)
+    // 웰스토리 메뉴 API 호출 (seoulrnd.menuSource=remote)
     implementation(libs.okhttp)
     implementation(libs.firebase.analytics)
 

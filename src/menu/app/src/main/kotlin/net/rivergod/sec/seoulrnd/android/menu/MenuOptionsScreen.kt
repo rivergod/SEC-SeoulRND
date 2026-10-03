@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.rivergod.sec.seoulrnd.android.menu.dto.Campus
+import net.rivergod.sec.seoulrnd.android.menu.dto.MenuArea
 import net.rivergod.sec.seoulrnd.android.menu.ui.theme.OptionBackground
 import net.rivergod.sec.seoulrnd.android.menu.ui.theme.OptionBoxBackground
 import net.rivergod.sec.seoulrnd.android.menu.ui.theme.OptionBoxStroke
@@ -44,10 +44,10 @@ import net.rivergod.sec.seoulrnd.android.menu.ui.theme.OptionTitleText
 /** 설정 버튼으로 여는 오른쪽 패널 (0.9.14 option_menu.xml). */
 @Composable
 fun MenuOptionsScreen(
-    firstCampus: Campus,
+    firstArea: MenuArea,
     selectedAlarm: AlarmOption?,
     customAlarmTime: AlarmTime?,
-    onCampusSelected: (Campus) -> Unit,
+    onAreaSelected: (MenuArea) -> Unit,
     onAlarmOptionSelected: (AlarmOption) -> Unit,
     onCustomAlarmTimeClick: () -> Unit,
     onShowLicense: () -> Unit,
@@ -94,20 +94,20 @@ fun MenuOptionsScreen(
         SectionTitle("보여지는 순서")
         OptionBox {
             TableRow(height = 20.dp) {
-                Campus.entries.forEachIndexed { index, campus ->
+                MenuArea.entries.forEachIndexed { index, area ->
                     if (index > 0) CellDivider()
-                    Cell(Modifier.weight(1f)) { CellText(campus.label, fontSize = 12.sp, bold = true) }
+                    Cell(Modifier.weight(1f)) { CellText(area.label, fontSize = 12.sp, bold = true) }
                 }
             }
             RowDivider()
             TableRow(height = 20.dp) {
-                Campus.entries.forEachIndexed { index, campus ->
+                MenuArea.entries.forEachIndexed { index, area ->
                     if (index > 0) CellDivider()
                     Cell(
                         Modifier
                             .weight(1f)
-                            .clickable { onCampusSelected(campus) }
-                    ) { CheckMark(campus == firstCampus) }
+                            .clickable { onAreaSelected(area) }
+                    ) { CheckMark(area == firstArea) }
                 }
             }
         }
@@ -287,10 +287,10 @@ private fun OptionDivider() {
 @Composable
 private fun MenuOptionsScreenPreview() {
     MenuOptionsScreen(
-        firstCampus = Campus.CAMPUS_2,
+        firstArea = MenuArea.DINE_IN,
         selectedAlarm = AlarmOption.DMC,
         customAlarmTime = AlarmTime(12, 10),
-        onCampusSelected = {},
+        onAreaSelected = {},
         onAlarmOptionSelected = {},
         onCustomAlarmTimeClick = {},
         onShowLicense = {},

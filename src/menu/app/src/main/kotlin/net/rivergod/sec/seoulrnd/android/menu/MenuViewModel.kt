@@ -14,10 +14,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.rivergod.sec.seoulrnd.android.menu.data.MenuParseException
 import net.rivergod.sec.seoulrnd.android.menu.data.MenuRepository
-import net.rivergod.sec.seoulrnd.android.menu.dto.Campus
 import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO
 import net.rivergod.sec.seoulrnd.android.menu.dto.DayCuisionsDTO
 import net.rivergod.sec.seoulrnd.android.menu.dto.MealType
+import net.rivergod.sec.seoulrnd.android.menu.dto.MenuArea
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.coroutines.cancellation.CancellationException
@@ -28,28 +28,28 @@ sealed interface MenuLoadState {
     data class Error(val message: String) : MenuLoadState
 }
 
-data class MenuSection(val campus: Campus, val items: List<CuisineDTO>)
+data class MenuSection(val area: MenuArea, val items: List<CuisineDTO>)
 
 data class MenuUiState(
     val date: LocalDate,
     val loadState: MenuLoadState = MenuLoadState.Loading,
     val isSampleData: Boolean = false,
     val selectedMeal: MealType = mealTypeFor(LocalTime.now()),
-    val firstCampus: Campus = Campus.CAMPUS_2,
+    val firstArea: MenuArea = MenuArea.DINE_IN,
     val selectedAlarm: AlarmOption? = null,
     val customAlarmTime: AlarmTime? = null,
     val isOptionMenuOpen: Boolean = false,
     val showTimeDialog: Boolean = false,
     val showLicenseDialog: Boolean = false,
 ) {
-    /** 선택된 끼니의 메뉴를 캠퍼스별로 묶는다. '보여지는 순서' 설정의 캠퍼스가 먼저 온다. */
+    /** 선택된 끼니의 메뉴를 식당/Take Out 으로 묶는다. '보여지는 순서' 설정의 묶음이 먼저 온다. */
     val sections: List<MenuSection>
         get() {
             val day = (loadState as? MenuLoadState.Loaded)?.day ?: return emptyList()
-            val campusOrder = listOf(firstCampus) + Campus.entries.filter { it != firstCampus }
+            val areaOrder = listOf(firstArea) + MenuArea.entries.filter { it != firstArea }
             val items = day.forMeal(selectedMeal)
-            return campusOrder.mapNotNull { campus ->
-                items.filter { it.campus == campus }.takeIf { it.isNotEmpty() }?.let { MenuSection(campus, it) }
+            return areaOrder.mapNotNull { area ->
+                items.filter { it.area == area }.takeIf { it.isNotEmpty() }?.let { MenuSection(area, it) }
             }
         }
 }
@@ -75,7 +75,7 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
         MenuUiState(
             date = LocalDate.now(),
             isSampleData = repository.isSample,
-            firstCampus = prefs.firstCampus,
+            firstArea = prefs.firstArea,
             selectedAlarm = prefs.selectedAlarm,
             customAlarmTime = prefs.customAlarmTime,
         )
@@ -126,9 +126,9 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
 
     fun closeOptionMenu() = _uiState.update { it.copy(isOptionMenuOpen = false) }
 
-    fun selectFirstCampus(campus: Campus) {
-        prefs.firstCampus = campus
-        _uiState.update { it.copy(firstCampus = campus) }
+    fun selectFirstArea(area: MenuArea) {
+        prefs.firstArea = area
+        _uiState.update { it.copy(firstArea = area) }
     }
 
     fun onAlarmOptionClick(option: AlarmOption) {

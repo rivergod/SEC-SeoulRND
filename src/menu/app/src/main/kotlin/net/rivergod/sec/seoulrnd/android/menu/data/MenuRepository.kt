@@ -16,10 +16,7 @@ class MenuRepository(private val source: MenuDataSource) {
     }
 
     companion object {
-        /**
-         * 데이터 출처는 빌드 설정 seoulrnd.menuSource 로 정한다 (app/build.gradle.kts).
-         * 0.9.14 의 웰스토리 API 가 동작하지 않아 기본값은 추정 데이터(SampleMenuDataSource) 이다.
-         */
+        /** 데이터 출처는 빌드 설정 seoulrnd.menuSource 로 정한다 (app/build.gradle.kts, 기본값 remote). */
         fun create(): MenuRepository =
             MenuRepository(if (BuildConfig.MENU_REMOTE) WelstoryRemoteDataSource() else SampleMenuDataSource())
     }

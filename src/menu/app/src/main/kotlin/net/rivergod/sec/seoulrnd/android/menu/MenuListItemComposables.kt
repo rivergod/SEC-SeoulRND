@@ -27,9 +27,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.rivergod.sec.seoulrnd.android.menu.dto.Campus
 import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO
 import net.rivergod.sec.seoulrnd.android.menu.dto.MealType
+import net.rivergod.sec.seoulrnd.android.menu.dto.MenuArea
 import net.rivergod.sec.seoulrnd.android.menu.ui.theme.MenuCalorieText
 import net.rivergod.sec.seoulrnd.android.menu.ui.theme.MenuNameText
 import net.rivergod.sec.seoulrnd.android.menu.ui.theme.MenuSideText
@@ -47,8 +47,8 @@ fun MenuGrid(sections: List<MenuSection>, modifier: Modifier = Modifier) {
         contentPadding = PaddingValues(vertical = 1.dp),
     ) {
         sections.forEach { section ->
-            item(key = "header-${section.campus}", span = { GridItemSpan(maxLineSpan) }) {
-                MenuHeaderItem(section.campus.label)
+            item(key = "header-${section.area}", span = { GridItemSpan(maxLineSpan) }) {
+                MenuHeaderItem(section.area.label)
             }
             items(section.items, key = { it.id }) { cuisine ->
                 MenuItemCard(cuisine)
@@ -58,9 +58,9 @@ fun MenuGrid(sections: List<MenuSection>, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun MenuHeaderItem(campusName: String) {
+fun MenuHeaderItem(title: String) {
     Text(
-        text = campusName,
+        text = title,
         modifier = Modifier
             .fillMaxWidth()
             .background(SectionHeaderBackground)
@@ -173,27 +173,27 @@ fun MenuMessage(message: String, modifier: Modifier = Modifier, content: @Compos
 @Preview(widthDp = 360)
 @Composable
 private fun MenuGridPreview() {
-    fun cuisine(id: String, course: String, title: String, campus: Campus) = CuisineDTO(
+    fun cuisine(id: String, course: String, title: String, area: MenuArea, kcal: String = "760") = CuisineDTO(
         id = id,
         mealType = MealType.LUNCH,
-        campus = campus,
+        area = area,
         courseName = course,
         iconRes = MenuItemIconResource.getMenuIcon(course),
         title = title,
         sideDishes = listOf("쌀밥", "계란찜", "콩나물무침", "깍두기"),
-        calorie = "760",
+        calorie = kcal,
     )
     MenuGrid(
         sections = listOf(
             MenuSection(
-                Campus.CAMPUS_2,
+                MenuArea.DINE_IN,
                 listOf(
-                    cuisine("1", "도담찌개", "돼지김치찌개", Campus.CAMPUS_2),
-                    cuisine("2", "가츠엔", "등심돈까스(950kcal)", Campus.CAMPUS_2),
-                    cuisine("3", "알 수 없는 코너", "토마토 미트볼 파스타와 마늘빵 세트", Campus.CAMPUS_2),
+                    cuisine("1", "도담찌개", "[맛집다녀왔습니다] 이북식닭개장", MenuArea.DINE_IN),
+                    cuisine("2", "가츠앤", "등심돈까스(950kcal)", MenuArea.DINE_IN),
+                    cuisine("3", "가든세이지", "홍합토마토파스타", MenuArea.DINE_IN),
                 )
             ),
-            MenuSection(Campus.CAMPUS_1, listOf(cuisine("4", "봄이온소반", "오징어볶음", Campus.CAMPUS_1))),
+            MenuSection(MenuArea.TAKE_OUT, listOf(cuisine("4", "T/O 김밥/말이", "김밥[2~3Coin]", MenuArea.TAKE_OUT, "1346.44"))),
         )
     )
 }
