@@ -22,6 +22,7 @@ import net.rivergod.sec.seoulrnd.android.menu.dto.MealType
 import net.rivergod.sec.seoulrnd.android.menu.dto.MenuArea
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import kotlin.coroutines.cancellation.CancellationException
 
 sealed interface MenuLoadState {
@@ -44,45 +45,62 @@ data class MenuSection(
         get() = if (area == MenuArea.TAKE_OUT) "${cafeteria.shortLabel} Take Out" else cafeteria.label
 }
 
+/**
+ * @param date 보고 있는 날짜. 오늘(today) 기준 ±[MAX_DAY_OFFSET] 일 안에서 옮길 수 있다.
+ */
 data class MenuUiState(
     val date: LocalDate,
+    val today: LocalDate = date,
     val loadState: MenuLoadState = MenuLoadState.Loading,
     val isSampleData: Boolean = false,
     val selectedMeal: MealType = mealTypeFor(LocalTime.now()),
     val firstCafeteria: Cafeteria = Cafeteria.CAFETERIA_2,
     val selectedAlarm: AlarmOption? = null,
     val customAlarmTime: AlarmTime? = null,
-    val isOptionMenuOpen: Boolean = false,
+    val isRefreshing: Boolean = false,
+    val isSettingsOpen: Boolean = false,
     val showTimeDialog: Boolean = false,
     val showLicenseDialog: Boolean = false,
 ) {
+    val isToday: Boolean get() = date == today
+    val canGoPrevious: Boolean get() = date > today.minusDays(MAX_DAY_OFFSET)
+    val canGoNext: Boolean get() = date < today.plusDays(MAX_DAY_OFFSET)
+
+    /** 오늘과의 차이: 0 오늘, -1 어제, 1 내일 … */
+    val dayOffset: Long get() = ChronoUnit.DAYS.between(today, date)
+
+    /** 선택된 끼니의 묶음. */
+    val sections: List<MenuSection> get() = sectionsFor(selectedMeal)
+
     /**
-     * 선택된 끼니의 메뉴를 식당별로 묶는다. '보여지는 순서' 설정의 식당이 먼저 오고,
+     * 한 끼니의 메뉴를 식당별로 묶는다. '보여지는 순서' 설정의 식당이 먼저 오고,
      * 식당 안에서는 식당 코너 다음에 Take Out 이 온다.
      */
-    val sections: List<MenuSection>
-        get() {
-            val day = (loadState as? MenuLoadState.Loaded)?.day ?: return emptyList()
-            val cafeteriaOrder = listOf(firstCafeteria) + Cafeteria.entries.filter { it != firstCafeteria }
-            val items = day.forMeal(selectedMeal)
-            return cafeteriaOrder.flatMap { cafeteria ->
-                if (cafeteria in day.failedCafeterias) {
-                    listOf(MenuSection(cafeteria, MenuArea.DINE_IN, emptyList(), failed = true))
-                } else {
-                    MenuArea.entries.mapNotNull { area ->
-                        items.filter { it.cafeteria == cafeteria && it.area == area }
-                            .takeIf { it.isNotEmpty() }
-                            ?.let { MenuSection(cafeteria, area, it) }
-                    }
+    fun sectionsFor(meal: MealType): List<MenuSection> {
+        val day = (loadState as? MenuLoadState.Loaded)?.day ?: return emptyList()
+        val cafeteriaOrder = listOf(firstCafeteria) + Cafeteria.entries.filter { it != firstCafeteria }
+        val items = day.forMeal(meal)
+        return cafeteriaOrder.flatMap { cafeteria ->
+            if (cafeteria in day.failedCafeterias) {
+                listOf(MenuSection(cafeteria, MenuArea.DINE_IN, emptyList(), failed = true))
+            } else {
+                MenuArea.entries.mapNotNull { area ->
+                    items.filter { it.cafeteria == cafeteria && it.area == area }
+                        .takeIf { it.isNotEmpty() }
+                        ?.let { MenuSection(cafeteria, area, it) }
                 }
             }
         }
+    }
 }
 
 sealed interface MenuEvent {
     data class Toast(val message: String) : MenuEvent
     data object RequestNotificationPermission : MenuEvent
 }
+
+/** 오늘 기준으로 앞뒤로 볼 수 있는 날 수. */
+const val MAX_DAY_OFFSET = 5L
 
 /** 0.9.14 와 같이 10시 전은 조식, 14시 전은 중식, 그 이후는 석식을 먼저 보여준다. */
 fun mealTypeFor(time: LocalTime): MealType = when {
@@ -112,26 +130,62 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
 
     private var loadJob: Job? = null
 
+    /** 이번 실행 동안 불러온 날짜별 메뉴. 날짜를 앞뒤로 옮길 때 다시 받지 않는다. (실패한 식당이 있으면 담지 않음) */
+    private val cache = HashMap<LocalDate, DayCuisionsDTO>()
+
     init {
-        load()
+        load(_uiState.value.date)
     }
 
-    /** 화면이 다시 보일 때 날짜가 바뀌었으면 새로 불러온다. */
+    /** 화면이 다시 보일 때 날짜가 바뀌었으면(자정을 넘김) 새 오늘로 옮긴다. */
     fun refreshIfDateChanged() {
-        if (_uiState.value.date != LocalDate.now()) load()
+        val now = LocalDate.now()
+        if (_uiState.value.today == now) return
+        cache.clear()
+        _uiState.update { it.copy(today = now) }
+        showDate(now)
     }
 
-    fun retry() = load()
+    fun showPreviousDay() = showDate(_uiState.value.date.minusDays(1))
 
-    private fun load() {
-        val date = LocalDate.now()
-        loadJob?.cancel()
+    fun showNextDay() = showDate(_uiState.value.date.plusDays(1))
+
+    fun showToday() = showDate(_uiState.value.today)
+
+    private fun showDate(target: LocalDate) {
+        val state = _uiState.value
+        val date = target.coerceIn(state.today.minusDays(MAX_DAY_OFFSET), state.today.plusDays(MAX_DAY_OFFSET))
+        if (date == state.date && state.loadState !is MenuLoadState.Error) return
         _uiState.update {
-            it.copy(date = date, loadState = MenuLoadState.Loading, selectedMeal = mealTypeFor(LocalTime.now()))
+            // 오늘로 돌아오면 시간대에 맞는 끼니를, 다른 날은 보던 끼니를 그대로 보여준다
+            it.copy(date = date, selectedMeal = if (date == it.today) mealTypeFor(LocalTime.now()) else it.selectedMeal)
+        }
+        load(date)
+    }
+
+    fun retry() = load(_uiState.value.date, force = true)
+
+    /** 당겨서 새로고침. 불러오는 동안 지금 보이는 메뉴를 유지하고, 실패하면 알림만 띄운다. */
+    fun refresh() {
+        val state = _uiState.value
+        load(state.date, force = true, keepContent = state.loadState is MenuLoadState.Loaded)
+    }
+
+    private fun load(date: LocalDate, force: Boolean = false, keepContent: Boolean = false) {
+        loadJob?.cancel()
+        val cached = cache[date]
+        if (cached != null && !force) {
+            _uiState.update { it.copy(loadState = MenuLoadState.Loaded(cached), isRefreshing = false) }
+            return
+        }
+        _uiState.update {
+            if (keepContent) it.copy(isRefreshing = true) else it.copy(loadState = MenuLoadState.Loading, isRefreshing = false)
         }
         loadJob = viewModelScope.launch {
             val newState = try {
-                MenuLoadState.Loaded(repository.load(date))
+                val day = repository.load(date)
+                if (day.failedCafeterias.isEmpty()) cache[date] = day
+                MenuLoadState.Loaded(day)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: MenuLoadException) {
@@ -145,28 +199,34 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
                 Log.e(TAG, "menu load failed", e)
                 MenuLoadState.Error(NETWORK_ERROR_MESSAGE).also { _events.trySend(MenuEvent.Toast(NETWORK_ERROR_MESSAGE)) }
             }
-            _uiState.update { it.copy(loadState = newState) }
+            _uiState.update {
+                when {
+                    // 그사이 다른 날짜로 옮겼으면 버린다
+                    it.date != date -> it
+                    keepContent && newState is MenuLoadState.Error -> it.copy(isRefreshing = false)
+                    else -> it.copy(loadState = newState, isRefreshing = false)
+                }
+            }
         }
     }
 
     fun selectMeal(mealType: MealType) = _uiState.update { it.copy(selectedMeal = mealType) }
 
-    fun toggleOptionMenu() = _uiState.update { it.copy(isOptionMenuOpen = !it.isOptionMenuOpen) }
+    fun openSettings() = _uiState.update { it.copy(isSettingsOpen = true) }
 
-    fun closeOptionMenu() = _uiState.update { it.copy(isOptionMenuOpen = false) }
+    fun closeSettings() = _uiState.update { it.copy(isSettingsOpen = false) }
 
     fun selectFirstCafeteria(cafeteria: Cafeteria) {
         prefs.firstCafeteria = cafeteria
         _uiState.update { it.copy(firstCafeteria = cafeteria) }
     }
 
-    fun onAlarmOptionClick(option: AlarmOption) {
-        val state = _uiState.value
-        when {
-            // 이미 선택된 항목을 다시 누르면 해제 (0.9.14 동작)
-            option == state.selectedAlarm -> clearAlarm()
-            option == AlarmOption.CUSTOM -> {
-                val time = state.customAlarmTime
+    /** @param option null 이면 알림을 끈다. 시각이 정해지지 않은 '사용자 설정' 은 시간 선택을 먼저 띄운다. */
+    fun selectAlarm(option: AlarmOption?) {
+        when (option) {
+            null -> clearAlarm()
+            AlarmOption.CUSTOM -> {
+                val time = _uiState.value.customAlarmTime
                 if (time == null) showTimeDialog() else applyAlarm(option, time)
             }
             else -> applyAlarm(option, AlarmTime(option.hour, option.minute))
@@ -177,13 +237,10 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
 
     fun dismissTimeDialog() = _uiState.update { it.copy(showTimeDialog = false) }
 
-    /** @return 입력이 올바르면 true. 잘못된 입력이면 다이얼로그를 유지한다. */
-    fun onCustomTimeEntered(input: String): Boolean {
-        val time = AlarmTime.parse(input) ?: return false
+    fun onCustomTimeSet(time: AlarmTime) {
         prefs.customAlarmTime = time
         _uiState.update { it.copy(customAlarmTime = time, showTimeDialog = false) }
         applyAlarm(AlarmOption.CUSTOM, time)
-        return true
     }
 
     fun showLicense(show: Boolean) = _uiState.update { it.copy(showLicenseDialog = show) }
@@ -194,7 +251,7 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
         RegisterAlarm.register(getApplication(), time)
         _uiState.update { it.copy(selectedAlarm = option) }
         _events.trySend(MenuEvent.RequestNotificationPermission)
-        _events.trySend(MenuEvent.Toast("매일 $time 에 알림이 울립니다. (주말 제외)"))
+        _events.trySend(MenuEvent.Toast("평일 $time 에 알림이 울립니다."))
     }
 
     private fun clearAlarm() {

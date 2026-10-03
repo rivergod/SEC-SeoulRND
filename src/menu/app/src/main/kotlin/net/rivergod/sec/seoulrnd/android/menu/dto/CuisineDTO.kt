@@ -9,9 +9,9 @@ enum class MealType { BREAKFAST, LUNCH, DINNER }
  * - 1식당: 풀무원 (puls2.pulmuone.com)
  * - 2식당: 삼성웰스토리 (welmenu.welstory.com)
  */
-enum class Cafeteria(val label: String, val shortLabel: String) {
-    CAFETERIA_1("1식당 (Cafeteria 1)", "1식당"),
-    CAFETERIA_2("2식당 (Cafeteria 2)", "2식당"),
+enum class Cafeteria(val label: String, val shortLabel: String, val vendor: String) {
+    CAFETERIA_1("1식당 (Cafeteria 1)", "1식당", "풀무원"),
+    CAFETERIA_2("2식당 (Cafeteria 2)", "2식당", "삼성웰스토리"),
 }
 
 /** 식당 안의 묶음. 두 식당 모두 식당 코너와 Take Out(T/O) 코너가 있다. */

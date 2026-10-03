@@ -90,14 +90,23 @@ class MenuRepositoryTest {
     }
 
     @Test
-    fun parsesAlarmTimeInput() {
-        assertEquals(AlarmTime(12, 30), AlarmTime.parse("1230"))
-        assertEquals(AlarmTime(9, 5), AlarmTime.parse("905"))
-        assertEquals(AlarmTime(11, 30), AlarmTime.parse("11:30"))
+    fun limitsDateNavigationToFiveDays() {
+        val today = LocalDate.of(2026, 10, 3)
+        fun state(offset: Long) = MenuUiState(date = today.plusDays(offset), today = today)
+
+        assertTrue(state(0).isToday && state(0).canGoPrevious && state(0).canGoNext)
+        assertTrue(state(-4).canGoPrevious)
+        assertTrue(!state(-5).canGoPrevious && state(-5).canGoNext)
+        assertTrue(state(5).canGoPrevious && !state(5).canGoNext)
+        assertEquals(-5L, state(-5).dayOffset)
+
+        assertEquals(listOf("2일 전", "어제", "오늘", "내일", "5일 후"), listOf(-2L, -1L, 0L, 1L, 5L).map { relativeDayLabel(it) })
+    }
+
+    @Test
+    fun formatsAlarmTime() {
         assertEquals("09:05", AlarmTime(9, 5).toString())
-        listOf("", "12", "12345", "2400", "1260", "abcd").forEach {
-            assertEquals("'$it' should be rejected", null, AlarmTime.parse(it))
-        }
+        assertEquals("12:30", AlarmTime(12, 30).toString())
     }
 
     @Test

@@ -1,36 +1,6 @@
 package net.rivergod.sec.seoulrnd.android.menu.ui.theme
 
 import androidx.compose.material3.Typography
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.sp
 
-// Text() 의 기본 스타일(bodyLarge). 화면마다 글자 크기를 직접 지정하므로
-// 0.9.14 의 TextView 처럼 줄 간격은 글자 크기를 따르고 자간은 두지 않는다.
-val Typography = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = TextUnit.Unspecified,
-        letterSpacing = 0.sp
-    )
-    /* Other default text styles to override
-titleLarge = TextStyle(
-    fontFamily = FontFamily.Default,
-    fontWeight = FontWeight.Normal,
-    fontSize = 22.sp,
-    lineHeight = 28.sp,
-    letterSpacing = 0.sp
-),
-labelSmall = TextStyle(
-    fontFamily = FontFamily.Default,
-    fontWeight = FontWeight.Medium,
-    fontSize = 11.sp,
-    lineHeight = 16.sp,
-    letterSpacing = 0.5.sp
-)
-*/
-)
+// Material 3 기본 글꼴 크기·줄 간격을 그대로 쓴다. 화면에서는 MaterialTheme.typography 토큰만 쓴다.
+val Typography = Typography()

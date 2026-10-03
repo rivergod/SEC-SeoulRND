@@ -19,20 +19,6 @@ enum class AlarmOption(val index: Int, val department: String, val hour: Int, va
 
 data class AlarmTime(val hour: Int, val minute: Int) {
     override fun toString() = "%02d:%02d".format(hour, minute)
-
-    companion object {
-        /**
-         * 사용자 입력("1230", "930", "12:30")을 시간으로 바꾼다. 0.9.14 의 MenuOptionControl.convertTime 과 같은 규칙에
-         * 분 범위 검사를 추가했다. 잘못된 입력이면 null.
-         */
-        fun parse(input: String): AlarmTime? {
-            val digits = input.replace(":", "").trim()
-            if (digits.length !in 3..4 || !digits.all { it.isDigit() }) return null
-            val hour = digits.dropLast(2).toInt()
-            val minute = digits.takeLast(2).toInt()
-            return if (hour in 0..23 && minute in 0..59) AlarmTime(hour, minute) else null
-        }
-    }
 }
 
 /**
