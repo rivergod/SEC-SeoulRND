@@ -20,7 +20,7 @@ interface MenuDataSource {
 
 /**
  * 0.9.14 (2024-11-01) 에서 사용하던 웰스토리 API.
- * 현재는 동작하지 않는 것으로 확인되어 기본값으로 사용하지 않는다. (MenuRepository.USE_REMOTE)
+ * 현재는 동작하지 않는 것으로 확인되어 기본값으로 사용하지 않는다. (빌드 설정 seoulrnd.menuSource=remote)
  */
 class WelstoryRemoteDataSource(
     private val client: OkHttpClient = OkHttpClient.Builder()
