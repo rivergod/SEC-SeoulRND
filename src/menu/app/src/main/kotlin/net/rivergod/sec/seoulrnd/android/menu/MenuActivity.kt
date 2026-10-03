@@ -1,6 +1,7 @@
 package net.rivergod.sec.seoulrnd.android.menu
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -72,6 +73,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import net.rivergod.sec.seoulrnd.android.menu.dto.Cafeteria
 import net.rivergod.sec.seoulrnd.android.menu.dto.CuisineDTO
 import net.rivergod.sec.seoulrnd.android.menu.dto.MealType
 import net.rivergod.sec.seoulrnd.android.menu.ui.theme.SecSeoulRnDMenuTheme
@@ -86,6 +88,7 @@ class MenuActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) handleNotificationIntent(intent)
         setContent {
             SecSeoulRnDMenuTheme {
                 MenuRoute(viewModel)
@@ -93,9 +96,26 @@ class MenuActivity : ComponentActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleNotificationIntent(intent)
+    }
+
     override fun onResume() {
         super.onResume()
         viewModel.refreshIfDateChanged()
+    }
+
+    private fun handleNotificationIntent(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_FROM_NOTIFICATION, false) == true) {
+            viewModel.onOpenedFromNotification()
+            intent.removeExtra(EXTRA_FROM_NOTIFICATION)
+        }
+    }
+
+    companion object {
+        /** 식사 시간 알림을 눌러 열었는지 (RegisterAlarm 이 넣는다) */
+        const val EXTRA_FROM_NOTIFICATION = "from_notification"
     }
 }
 
@@ -105,6 +125,7 @@ private fun MenuRoute(viewModel: MenuViewModel) {
     val context = LocalContext.current
 
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        viewModel.onNotificationPermissionResult(granted)
         if (!granted) {
             Toast.makeText(context, "알림 권한이 없어 식사 시간 알림을 표시할 수 없습니다.", Toast.LENGTH_LONG).show()
         }
@@ -160,6 +181,8 @@ private fun MenuRoute(viewModel: MenuViewModel) {
                 onSettingsClick = viewModel::openSettings,
                 onRefresh = viewModel::refresh,
                 onRetry = viewModel::retry,
+                onCuisineViewed = viewModel::onCuisineViewed,
+                onTakeOutToggled = viewModel::onTakeOutToggled,
             )
         }
     }
@@ -173,7 +196,10 @@ private fun MenuRoute(viewModel: MenuViewModel) {
     }
 
     if (state.showLicenseDialog) {
-        LicenseDialog(onDismissRequest = { viewModel.showLicense(false) })
+        LicenseDialog(
+            onDismissRequest = { viewModel.showLicense(false) },
+            onOpenProjectPage = viewModel::onProjectPageOpened,
+        )
     }
 }
 
@@ -181,13 +207,15 @@ private fun MenuRoute(viewModel: MenuViewModel) {
 @Composable
 fun MenuScreen(
     state: MenuUiState,
-    onMealSelected: (MealType) -> Unit,
+    onMealSelected: (MealType, method: String) -> Unit,
     onPreviousDay: () -> Unit,
     onNextDay: () -> Unit,
     onToday: () -> Unit,
     onSettingsClick: () -> Unit,
     onRefresh: () -> Unit,
     onRetry: () -> Unit,
+    onCuisineViewed: (CuisineDTO) -> Unit = {},
+    onTakeOutToggled: (Cafeteria, Boolean) -> Unit = { _, _ -> },
 ) {
     var detail by remember { mutableStateOf<CuisineDTO?>(null) }
 
@@ -195,10 +223,16 @@ fun MenuScreen(
     val meals = MealType.entries
     val pagerState = rememberPagerState(initialPage = state.selectedMeal.ordinal) { meals.size }
     val scope = rememberCoroutineScope()
+    // 탭을 눌러 옮긴 것인지 손으로 넘긴 것인지 구분해 기록한다
+    val tabTarget = remember { mutableStateOf<MealType?>(null) }
 
-    // 손으로 넘겨서 멈춘 페이지를 선택된 끼니로 반영
+    // 멈춘 페이지를 선택된 끼니로 반영
     LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.settledPage }.collect { onMealSelected(meals[it]) }
+        snapshotFlow { pagerState.settledPage }.collect {
+            val meal = meals[it]
+            onMealSelected(meal, if (meal == tabTarget.value) "tab" else "swipe")
+            tabTarget.value = null
+        }
     }
     // ViewModel 이 끼니를 바꾼 경우(오늘로 돌아오며 시간대 끼니 선택 등) 페이지를 따라 옮김
     LaunchedEffect(state.selectedMeal) {
@@ -227,7 +261,10 @@ fun MenuScreen(
                 MealTabs(
                     // 넘기는 중에도 탭 표시가 바로 따라오도록 currentPage 를 쓴다
                     selected = meals[pagerState.currentPage],
-                    onSelected = { meal -> scope.launch { pagerState.animateScrollToPage(meal.ordinal) } },
+                    onSelected = { meal ->
+                        tabTarget.value = meal
+                        scope.launch { pagerState.animateScrollToPage(meal.ordinal) }
+                    },
                 )
             }
         },
@@ -247,8 +284,12 @@ fun MenuScreen(
                 MealPage(
                     state = state,
                     meal = meals[page],
-                    onCuisineClick = { detail = it },
+                    onCuisineClick = {
+                        detail = it
+                        onCuisineViewed(it)
+                    },
                     onRetry = onRetry,
+                    onTakeOutToggled = onTakeOutToggled,
                 )
             }
         }
@@ -264,6 +305,7 @@ private fun MealPage(
     meal: MealType,
     onCuisineClick: (CuisineDTO) -> Unit,
     onRetry: () -> Unit,
+    onTakeOutToggled: (Cafeteria, Boolean) -> Unit,
 ) {
     when (val load = state.loadState) {
         MenuLoadState.Loading -> MenuMessage("메뉴를 불러오는 중입니다") {
@@ -295,7 +337,12 @@ private fun MealPage(
                 // 날짜나 보여지는 순서가 바뀌면 맨 위부터 보여준다.
                 // (key 없이 두면 LazyGrid 가 이전 항목 위치를 따라가 스크롤이 유지된다)
                 else -> key(state.date, state.firstCafeteria) {
-                    MenuGrid(sections, onCuisineClick = onCuisineClick, onRetry = onRetry)
+                    MenuGrid(
+                        sections,
+                        onCuisineClick = onCuisineClick,
+                        onRetry = onRetry,
+                        onTakeOutToggled = onTakeOutToggled,
+                    )
                 }
             }
         }
@@ -449,7 +496,7 @@ private fun MenuScreenPreview() {
                 loadState = MenuLoadState.Loading,
                 isSampleData = true
             ),
-            onMealSelected = {},
+            onMealSelected = { _, _ -> },
             onPreviousDay = {},
             onNextDay = {},
             onToday = {},

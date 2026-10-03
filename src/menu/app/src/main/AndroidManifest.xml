@@ -17,6 +17,15 @@
         android:theme="@style/AppTheme.NoActionBar"
         android:name="net.rivergod.sec.seoulrnd.android.menu.MenuApplication">
 
+        <!-- Firebase Analytics: 화면이 Activity 하나라 화면 기록은 MenuAnalytics 가 직접 남긴다 -->
+        <meta-data
+            android:name="google_analytics_automatic_screen_reporting_enabled"
+            android:value="false" />
+        <!-- 수집 여부는 빌드 타입별로 정한다 (app/build.gradle.kts 의 analyticsEnabled) -->
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="${analyticsEnabled}" />
+
         <activity
             android:name="net.rivergod.sec.seoulrnd.android.menu.MenuActivity"
             android:label="@string/app_name"

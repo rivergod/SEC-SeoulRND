@@ -18,6 +18,10 @@ fun buildSetting(name: String): String? = providers.gradleProperty(name).orNull 
 val menuSource: String = buildSetting("seoulrnd.menuSource") ?: "remote"
 require(menuSource in setOf("sample", "remote")) { "seoulrnd.menuSource 는 sample 또는 remote 여야 함: $menuSource" }
 
+// Firebase Analytics 수집 — release 는 항상 켜고, debug 는 개발 데이터가 섞이지 않도록 기본으로 끈다.
+// debug 에서 확인하려면 -Pseoulrnd.analyticsInDebug=true (Firebase 콘솔 DebugView 와 함께 사용).
+val analyticsInDebug: Boolean = buildSetting("seoulrnd.analyticsInDebug").toBoolean()
+
 // release 서명 값은 local.properties(또는 -P)의 signing.* 에서 읽음. 소스에 경로·암호를 적지 않음.
 // 설정이 없으면 release 는 서명되지 않은 채로 빌드됨.
 val releaseStoreFile: String? = buildSetting("signing.storeFile")
@@ -55,7 +59,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            manifestPlaceholders["analyticsEnabled"] = analyticsInDebug.toString()
+        }
         release {
+            manifestPlaceholders["analyticsEnabled"] = "true"
             optimization {
                 enable = true
             }

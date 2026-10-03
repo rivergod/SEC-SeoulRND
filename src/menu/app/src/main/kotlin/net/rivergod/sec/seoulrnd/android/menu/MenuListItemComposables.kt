@@ -76,6 +76,7 @@ fun MenuGrid(
     onCuisineClick: (CuisineDTO) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    onTakeOutToggled: (Cafeteria, expanded: Boolean) -> Unit = { _, _ -> },
 ) {
     var expandedTakeOut by rememberSaveable { mutableStateOf(emptyList<String>()) }
 
@@ -108,6 +109,7 @@ fun MenuGrid(
                             expanded = expanded,
                             onClick = {
                                 expandedTakeOut = if (expanded) expandedTakeOut - key else expandedTakeOut + key
+                                onTakeOutToggled(section.cafeteria, !expanded)
                             }
                         )
                     }

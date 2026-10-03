@@ -10,6 +10,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import net.rivergod.sec.seoulrnd.android.menu.analytics.MenuAnalytics
 import java.util.Calendar
 
 /**
@@ -93,7 +94,9 @@ class RegisterAlarm : BroadcastReceiver() {
             val contentIntent = PendingIntent.getActivity(
                 context,
                 0,
-                Intent(context, MenuActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+                Intent(context, MenuActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    .putExtra(MenuActivity.EXTRA_FROM_NOTIFICATION, true),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
 
@@ -111,6 +114,7 @@ class RegisterAlarm : BroadcastReceiver() {
 
             try {
                 manager.notify(NOTIFICATION_ID, notification)
+                MenuAnalytics(context).mealNotificationShown()
             } catch (e: SecurityException) {
                 // POST_NOTIFICATIONS 권한이 회수된 경우
             }

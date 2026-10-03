@@ -30,7 +30,7 @@ private const val TAG = "LicenseDialog"
 private const val PROJECT_URL = "https://github.com/rivergod/SEC-SeoulRND"
 
 @Composable
-fun LicenseDialog(onDismissRequest: () -> Unit) {
+fun LicenseDialog(onDismissRequest: () -> Unit, onOpenProjectPage: () -> Unit = {}) {
     val context = LocalContext.current
     val licenseText = remember { loadLicenseText(context) }
 
@@ -47,6 +47,7 @@ fun LicenseDialog(onDismissRequest: () -> Unit) {
                 Spacer(Modifier.height(12.dp))
                 OutlinedButton(
                     onClick = {
+                        onOpenProjectPage()
                         try {
                             context.startActivity(Intent(Intent.ACTION_VIEW, PROJECT_URL.toUri()))
                         } catch (e: ActivityNotFoundException) {

@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.rivergod.sec.seoulrnd.android.menu.analytics.MenuAnalytics
 import net.rivergod.sec.seoulrnd.android.menu.data.MenuLoadException
 import net.rivergod.sec.seoulrnd.android.menu.data.MenuParseException
 import net.rivergod.sec.seoulrnd.android.menu.data.MenuRepository
@@ -113,6 +114,7 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = MenuRepository.create()
     private val prefs = MenuPreferences(application)
+    private val analytics = MenuAnalytics(application)
 
     private val _uiState = MutableStateFlow(
         MenuUiState(
@@ -134,6 +136,8 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
     private val cache = HashMap<LocalDate, DayCuisionsDTO>()
 
     init {
+        analytics.syncUserProperties(prefs.firstCafeteria, prefs.selectedAlarm)
+        analytics.screen(MenuAnalytics.Screen.MENU)
         load(_uiState.value.date)
     }
 
@@ -143,16 +147,16 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
         if (_uiState.value.today == now) return
         cache.clear()
         _uiState.update { it.copy(today = now) }
-        showDate(now)
+        showDate(now, "midnight")
     }
 
-    fun showPreviousDay() = showDate(_uiState.value.date.minusDays(1))
+    fun showPreviousDay() = showDate(_uiState.value.date.minusDays(1), "previous")
 
-    fun showNextDay() = showDate(_uiState.value.date.plusDays(1))
+    fun showNextDay() = showDate(_uiState.value.date.plusDays(1), "next")
 
-    fun showToday() = showDate(_uiState.value.today)
+    fun showToday() = showDate(_uiState.value.today, "today")
 
-    private fun showDate(target: LocalDate) {
+    private fun showDate(target: LocalDate, direction: String) {
         val state = _uiState.value
         val date = target.coerceIn(state.today.minusDays(MAX_DAY_OFFSET), state.today.plusDays(MAX_DAY_OFFSET))
         if (date == state.date && state.loadState !is MenuLoadState.Error) return
@@ -160,21 +164,28 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
             // 오늘로 돌아오면 시간대에 맞는 끼니를, 다른 날은 보던 끼니를 그대로 보여준다
             it.copy(date = date, selectedMeal = if (date == it.today) mealTypeFor(LocalTime.now()) else it.selectedMeal)
         }
+        analytics.changeDate(direction, _uiState.value.dayOffset)
         load(date)
     }
 
-    fun retry() = load(_uiState.value.date, force = true)
+    fun retry() {
+        analytics.refresh("button")
+        load(_uiState.value.date, force = true)
+    }
 
     /** 당겨서 새로고침. 불러오는 동안 지금 보이는 메뉴를 유지하고, 실패하면 알림만 띄운다. */
     fun refresh() {
+        analytics.refresh("pull")
         val state = _uiState.value
         load(state.date, force = true, keepContent = state.loadState is MenuLoadState.Loaded)
     }
 
     private fun load(date: LocalDate, force: Boolean = false, keepContent: Boolean = false) {
         loadJob?.cancel()
+        val dayOffset = ChronoUnit.DAYS.between(_uiState.value.today, date)
         val cached = cache[date]
         if (cached != null && !force) {
+            logMenuLoad(cached, dayOffset, fromCache = true)
             _uiState.update { it.copy(loadState = MenuLoadState.Loaded(cached), isRefreshing = false) }
             return
         }
@@ -185,11 +196,13 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
             val newState = try {
                 val day = repository.load(date)
                 if (day.failedCafeterias.isEmpty()) cache[date] = day
+                logMenuLoad(day, dayOffset, fromCache = false)
                 MenuLoadState.Loaded(day)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: MenuLoadException) {
                 // 두 식당 모두 실패한 경우. 원인별 로그는 MenuRepository 가 남긴다.
+                analytics.menuLoad("error", dayOffset, fromCache = false, failed = Cafeteria.entries.toSet(), error = e)
                 if (e.cause is MenuParseException) {
                     MenuLoadState.Error("식단 정보를 해석할 수 없습니다.")
                 } else {
@@ -197,6 +210,7 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "menu load failed", e)
+                analytics.menuLoad("error", dayOffset, fromCache = false, failed = Cafeteria.entries.toSet(), error = e)
                 MenuLoadState.Error(NETWORK_ERROR_MESSAGE).also { _events.trySend(MenuEvent.Toast(NETWORK_ERROR_MESSAGE)) }
             }
             _uiState.update {
@@ -210,16 +224,48 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun selectMeal(mealType: MealType) = _uiState.update { it.copy(selectedMeal = mealType) }
+    private fun logMenuLoad(day: DayCuisionsDTO, dayOffset: Long, fromCache: Boolean) {
+        val result = when {
+            day.failedCafeterias.isNotEmpty() -> "partial"
+            day.cuisines.isEmpty() -> "empty"
+            else -> "success"
+        }
+        analytics.menuLoad(result, dayOffset, fromCache, day.failedCafeterias, error = null)
+    }
 
-    fun openSettings() = _uiState.update { it.copy(isSettingsOpen = true) }
+    /** @param method "tab" | "swipe" */
+    fun selectMeal(mealType: MealType, method: String) {
+        if (_uiState.value.selectedMeal == mealType) return
+        _uiState.update { it.copy(selectedMeal = mealType) }
+        analytics.selectMeal(mealType, method)
+    }
 
-    fun closeSettings() = _uiState.update { it.copy(isSettingsOpen = false) }
+    fun openSettings() {
+        _uiState.update { it.copy(isSettingsOpen = true) }
+        analytics.screen(MenuAnalytics.Screen.SETTINGS)
+    }
+
+    fun closeSettings() {
+        _uiState.update { it.copy(isSettingsOpen = false) }
+        analytics.screen(MenuAnalytics.Screen.MENU)
+    }
 
     fun selectFirstCafeteria(cafeteria: Cafeteria) {
+        if (_uiState.value.firstCafeteria == cafeteria) return
         prefs.firstCafeteria = cafeteria
         _uiState.update { it.copy(firstCafeteria = cafeteria) }
+        analytics.setDisplayOrder(cafeteria)
     }
+
+    fun onCuisineViewed(cuisine: CuisineDTO) = analytics.viewCuisine(cuisine)
+
+    fun onTakeOutToggled(cafeteria: Cafeteria, expanded: Boolean) = analytics.toggleTakeOut(cafeteria, expanded)
+
+    fun onNotificationPermissionResult(granted: Boolean) = analytics.notificationPermission(granted)
+
+    fun onProjectPageOpened() = analytics.openProjectPage()
+
+    fun onOpenedFromNotification() = analytics.openFromNotification()
 
     /** @param option null 이면 알림을 끈다. 시각이 정해지지 않은 '사용자 설정' 은 시간 선택을 먼저 띄운다. */
     fun selectAlarm(option: AlarmOption?) {
@@ -243,22 +289,28 @@ class MenuViewModel(application: Application) : AndroidViewModel(application) {
         applyAlarm(AlarmOption.CUSTOM, time)
     }
 
-    fun showLicense(show: Boolean) = _uiState.update { it.copy(showLicenseDialog = show) }
+    fun showLicense(show: Boolean) {
+        _uiState.update { it.copy(showLicenseDialog = show) }
+        analytics.screen(if (show) MenuAnalytics.Screen.LICENSE else MenuAnalytics.Screen.SETTINGS)
+    }
 
     private fun applyAlarm(option: AlarmOption, time: AlarmTime) {
         prefs.selectedAlarm = option
         prefs.alarmTime = time
         RegisterAlarm.register(getApplication(), time)
         _uiState.update { it.copy(selectedAlarm = option) }
+        analytics.setAlarm(option, time)
         _events.trySend(MenuEvent.RequestNotificationPermission)
         _events.trySend(MenuEvent.Toast("평일 $time 에 알림이 울립니다."))
     }
 
     private fun clearAlarm() {
+        if (_uiState.value.selectedAlarm == null) return
         prefs.selectedAlarm = null
         prefs.alarmTime = null
         RegisterAlarm.unregister(getApplication())
         _uiState.update { it.copy(selectedAlarm = null) }
+        analytics.setAlarm(null, null)
     }
 
     private companion object {
